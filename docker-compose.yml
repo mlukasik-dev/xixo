@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  web:
+    build:
+      context: xixo-ui
+      dockerfile: Dockerfile.dev
+    restart: always
+    ports:
+      - 3000:3000
+    volumes:
+      - ./xixo-ui:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - api_gateway
+
+  api_gateway:
+    build:
+      context: xixo-api-gateway
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgres_db
+
+  postgres_db:
+    image: postgres:13
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgres/docker_postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql

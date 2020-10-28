@@ -1,0 +1,9 @@
+type Account {
+  displayName: String!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+input UpdateAccountInput {
+  displayName: String
+}

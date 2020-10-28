@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package xixo.account.v1;
+option go_package = "protobuf/accountpb";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+
+// Represents Account entity
+message Account {
+  // Resource name of the acount. It must have the format of `accounts/*`
+  // Example `accounts/a49a9762-3790-4b4f-adbf-4577a35b1df7`
+  string name = 1;
+  // Display name of the account.
+  // For example agency name of the lawyer firm or fullname of the owner
+  string display_name = 2;
+  // The creation timestamp of an account.
+  // Output only.
+  google.protobuf.Timestamp create_time = 3;
+  // The last update timestamp of an account.
+  // Output only.
+  google.protobuf.Timestamp update_time = 4;
+}
+
+// Accounts service
+service Accounts {
+  // Returnes a list of accounts
+  // uses pagination
+  rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
+  // Counts resources based on specified filter and returnes the result
+  rpc GetAccountsCount(GetAccountsCountRequest)
+      returns (GetAccountsCountResponse);
+  rpc GetAccount(GetAccountRequest) returns (Account);
+  rpc CreateAccount(CreateAccountRequest) returns (Account);
+  rpc UpdateAccount(UpdateAccountRequest) returns (Account);
+  rpc DeleteAccount(DeleteAccountRequest) returns (google.protobuf.Empty);
+}
+
+message ListAccountsRequest {
+  // The maximum number of items to return.
+  int32 page_size = 1;
+  // The next_page_token value returned from a previous List request, if any.
+  string page_token = 2;
+}
+message ListAccountsResponse {
+  repeated Account accounts = 1;
+  // Token to retrieve the next page of results, or empty if there are no
+  // more results in the list.
+  string next_page_token = 2;
+}
+
+message GetAccountsCountRequest {}
+message GetAccountsCountResponse { int32 count = 1; }
+
+message GetAccountRequest {
+  // Resource name of a book.
+  // For example: `accounts/a49a9762-3790-4b4f-adbf-4577a35b1df7`.
+  string name = 1;
+}
+
+message CreateAccountRequest {
+  message AccountAdmin {
+    string first_name = 1;
+    string last_name = 2;
+    string email = 3;
+    string phone_number = 4;
+  }
+  Account account = 1;
+  AccountAdmin account_admin = 2;
+}
+
+message UpdateAccountRequest {
+  // Account entity to with updated fields
+  // all fields not specified in update_mask will be ignored
+  // account.name field serves as name of the resource to update
+  Account account = 1;
+  // The update mask applies to the resource. For the `FieldMask`
+  // definition, see
+  // https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+message DeleteAccountRequest {
+  // The resource name of the book to be deleted, for example:
+  // "accounts/a49a9762-3790-4b4f-adbf-4577a35b1df7"
+  string name = 1;
+}

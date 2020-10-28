@@ -1,0 +1,283 @@
+syntax = "proto3";
+
+package xixo.identity.v1;
+option go_package = "protobuf/identitypb";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+
+// Authentication service
+// provides RPCs for authenticating or registering new users
+service Auth {
+  rpc Login(LoginRequest) returns (Token);
+  // Before using register RPCs user/admin must be created using
+  // User/Admin services. In other words Register RPC just provides
+  // a way to create a password for already existing user
+  rpc Register(RegisterRequest) returns (Token);
+}
+
+message LoginRequest {
+  // AccountID of the user to authenticate
+  // if it's empty request is treated as a request to
+  // authenticate an administrator
+  string account_id = 1;
+  // email must be valid
+  // otherwise INVALID_ARGUMENT error will be returned
+  string email = 2;
+  string password = 3;
+}
+
+message RegisterRequest {
+  // AccountID of the user to register
+  // if it's empty request is treated as a request to
+  // register an administrator
+  string account_id = 1;
+  // email must be valid
+  // otherwise INVALID_ARGUMENT error will be returned
+  string email = 2;
+  string password = 3;
+}
+
+message Token {
+  // JWT access token among others must container array of roles
+  // possessed by user/admin
+  string access_token = 1;
+}
+
+// Represents Admin entity
+message Admin {
+  // Resource name of the admin. It must have the format of `admins/*`
+  // Example `admins/a49a9762-3790-4b4f-adbf-4577a35b1df7`
+  string name = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  // array of resource names of the roles, which are
+  // possessed by the admin
+  repeated string role_names = 5;
+  // The creation timestamp of the admin.
+  // Output only.
+  google.protobuf.Timestamp create_time = 6;
+  // The last update timestamp of the admin.
+  // Output only.
+  google.protobuf.Timestamp update_time = 7;
+}
+
+// Admin's service
+// provides admin management related RPCs
+service Admins {
+  rpc ListAdmins(ListAdminsRequest) returns (ListAdminsResponse);
+  // Counts resources based on specified filter and returnes the result
+  rpc GetAdminsCount(GetAdminsCountRequest) returns (GetAdminsCountResponse);
+  rpc GetAdmin(GetAdminRequest) returns (Admin);
+  rpc CreateAdmin(CreateAdminRequest) returns (Admin);
+  rpc UpdateAdmin(UpdateAdminRequest) returns (Admin);
+  rpc DeleteAdmin(DeleteAdminRequest) returns (google.protobuf.Empty);
+}
+
+message ListAdminsRequest {
+  // The maximum number of items to return.
+  int32 page_size = 1;
+  // The next_page_token value returned from a previous List request, if any.
+  string page_token = 2;
+  // The filter expression.
+  string filter = 3;
+}
+message ListAdminsResponse {
+  repeated Admin admins = 1;
+  // Token to retrieve the next page of results, or empty if there are no
+  // more results in the list.
+  string next_page_token = 2;
+}
+
+message GetAdminsCountRequest {}
+message GetAdminsCountResponse { int32 count = 1; }
+
+message GetAdminRequest {
+  // Resource name of the admin.
+  // For example: `admins/a49a9762-3790-4b4f-adbf-4577a35b1df7`.
+  string name = 1;
+}
+
+message CreateAdminRequest { Admin admin = 1; }
+
+message UpdateAdminRequest {
+  // Admin entity to with updated fields
+  // all fields not specified in update_mask will be ignored
+  // admin.name field serves as name of the resource to update
+  Admin admin = 1;
+  // The update mask applies to the resource. For the `FieldMask`
+  // definition, see
+  // https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+message DeleteAdminRequest {
+  // The resource name of the admin to be deleted, for
+  // example:
+  // "admins/a49a9762-3790-4b4f-adbf-4577a35b1df7"
+  string name = 1;
+}
+
+message User {
+  // Resource name of the user. It must have the format of `accounts/*/users/*`
+  // For example:
+  // `accounts/a49a9762-3790-4b4f-adbf-4577a35b1df7/users/a49a9762-3790-4b4f-adbf-4577a35b1df7`
+  string name = 1;
+  string first_name = 2;
+  string last_name = 3;
+  // have to be unique across all accounts
+  string email = 4;
+  string phone_number = 5;
+  // array of resource names of the roles, which are
+  // possessed by the user
+  repeated string role_names = 6;
+  // The creation timestamp of the user.
+  // Output only.
+  google.protobuf.Timestamp create_time = 7;
+  // The last update timestamp of the user.
+  // Output only.
+  google.protobuf.Timestamp update_time = 8;
+}
+
+// User's service
+// provides user management related RPCs
+service Users {
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  // Counts resources based on specified filter and returnes the result
+  rpc GetUsersCount(GetUsersCountRequest) returns (GetUsersCountResponse);
+  rpc GetUser(GetUserRequest) returns (User);
+  rpc CreateUser(CreateUserRequest) returns (User);
+  rpc UpdateUser(UpdateUserRequest) returns (User);
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty);
+}
+
+message ListUsersRequest {
+  // The parent resource name.
+  string parent = 1;
+  // The maximum number of items to return.
+  int32 page_size = 2;
+  // The next_page_token value returned from a previous List request, if any.
+  string page_token = 3;
+  // The filter expression.
+  string filter = 4;
+}
+message ListUsersResponse {
+  repeated User users = 1;
+  // Token to retrieve the next page of results, or empty if there are no
+  // more results in the list.
+  string next_page_token = 2;
+}
+
+message GetUsersCountRequest {
+  // The parent resource name.
+  string parent = 1;
+}
+message GetUsersCountResponse { int32 count = 1; }
+
+message GetUserRequest {
+  // Resource name of the user. It must have the format of `accounts/*/users/*`
+  string name = 1;
+}
+
+message CreateUserRequest {
+  // The parent resource name where the user is to be created.
+  string parent = 1;
+  // The user to create.
+  User user = 2;
+  // if true 'Account Admin' role will be assigned
+  // to the user
+  bool initial_user = 3;
+}
+
+message UpdateUserRequest {
+  // user entity to with updated fields
+  // all fields not specified in update_mask will be ignored
+  // user.name field serves as name of the resource to update
+  User user = 1;
+  // The update mask applies to the resource. For the `FieldMask`
+  // definition, see
+  // https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+message DeleteUserRequest {
+  // The resource name of the user to be deleted
+  string name = 1;
+}
+
+message Permission { string method = 1; }
+
+message Role {
+  // Resource name of the role. It must have the format of `roles/*`
+  // For example:
+  // `roles/a49a9762-3790-4b4f-adbf-4577a35b1df7`
+  string name = 1;
+  // if true this role can be assigned only to the admin
+  bool admin_only = 2;
+  string display_name = 3;
+  string description = 4;
+  // List of permissions this role possesses
+  repeated Permission permissions = 5;
+  // The creation timestamp of the role.
+  // Output only.
+  google.protobuf.Timestamp create_time = 6;
+  // The last update timestamp of the role.
+  // Output only.
+  google.protobuf.Timestamp update_time = 7;
+}
+
+// Role's service
+// Provides RPCs for managing roles
+service Roles {
+  rpc ListRoles(ListRolesRequest) returns (ListRolesResponse);
+  // Counts resources based on specified filter and returnes the result
+  rpc GetRolesCount(GetRolesCountRequest) returns (GetRolesCountResponse);
+  rpc GetRole(GetRoleRequest) returns (Role);
+  rpc CreateRole(CreateRoleRequest) returns (Role);
+  rpc UpdateRole(UpdateRoleRequest) returns (Role);
+  rpc DeleteRole(DeleteRoleRequest) returns (google.protobuf.Empty);
+}
+
+message ListRolesRequest {
+  // The maximum number of items to return.
+  int32 page_size = 1;
+  // The next_page_token value returned from a previous List request, if any.
+  string page_token = 2;
+  // The filter expression.
+  string filter = 3;
+}
+message ListRolesResponse {
+  repeated Role roles = 1;
+  // Token to retrieve the next page of results, or empty if there are no
+  // more results in the list.
+  string next_page_token = 2;
+}
+
+message GetRolesCountRequest {}
+message GetRolesCountResponse { int32 count = 1; }
+
+message GetRoleRequest {
+  // Resource name of the role. It must have the format of `roles/*`
+  string name = 1;
+}
+
+message CreateRoleRequest {
+  // The role to create
+  Role role = 1;
+}
+
+message UpdateRoleRequest {
+  // The role to update
+  Role role = 1;
+  // The update mask applies to the resource. For the `FieldMask`
+  // definition, see
+  // https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+message DeleteRoleRequest {
+  // Resource name of the role to delete. It must have the format of `roles/*`
+  string name = 1;
+}

@@ -1,0 +1,28 @@
+type User {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  phoneNumber: String
+  roles: [Role]!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+input CreateUserInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  phoneNumber: String
+}
+
+input UpdateUserInput {
+  firstName: String
+  lastName: String
+  email: String
+  phoneNumber: String
+}
+
+type DeleteUserPayload {
+  success: Boolean!
+}

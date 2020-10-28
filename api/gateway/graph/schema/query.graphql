@@ -1,0 +1,36 @@
+type PageInfo {
+  hasNextPage: Boolean!
+}
+
+type RolesConnection {
+  totalCount: Int!
+  edges: [RoleEdge]!
+  pageInfo: PageInfo!
+}
+
+type RoleEdge {
+  node: Role!
+  cursor: String!
+}
+
+type UsersConnection {
+  totalCount: Int!
+  edges: [UserEdge]!
+  pageInfo: PageInfo!
+}
+
+type UserEdge {
+  node: User!
+  cursor: String!
+}
+
+type Query {
+  roles(first: Int!, after: String): RolesConnection!
+  role(id: ID!): Role
+
+  me: User!
+  users(first: Int!, after: String): UsersConnection!
+  user(id: ID!): User
+
+  account: Account
+}

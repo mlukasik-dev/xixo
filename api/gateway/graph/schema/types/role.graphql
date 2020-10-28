@@ -1,0 +1,28 @@
+type Permission {
+  method: String!
+}
+
+input PermissionsInput {
+  method: String!
+}
+
+type Role {
+  id: String!
+  displayName: String!
+  description: String
+  permissions: [Permission]!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+input CreateRoleInput {
+  displayName: String!
+  description: String
+  permissions: [PermissionsInput]
+}
+
+input UpdateRoleInput {
+  displayName: String
+  description: String
+  permissions: [PermissionsInput]
+}
