@@ -7,16 +7,6 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/field_mask.proto";
 
-// Authentication service
-// provides RPCs for authenticating or registering new users
-service Auth {
-  rpc Login(LoginRequest) returns (Token);
-  // Before using register RPCs user/admin must be created using
-  // User/Admin services. In other words Register RPC just provides
-  // a way to create a password for already existing user
-  rpc Register(RegisterRequest) returns (Token);
-}
-
 message LoginRequest {
   // AccountID of the user to authenticate
   // if it's empty request is treated as a request to
@@ -64,9 +54,15 @@ message Admin {
   google.protobuf.Timestamp update_time = 7;
 }
 
-// Admin's service
-// provides admin management related RPCs
-service Admins {
+service IdentityService {
+  // Auth RPCs
+  rpc Login(LoginRequest) returns (Token);
+  // Before using register RPCs user/admin must be created using
+  // User/Admin services. In other words Register RPC just provides
+  // a way to create a password for already existing user
+  rpc Register(RegisterRequest) returns (Token);
+
+  // Admin's RPCs
   rpc ListAdmins(ListAdminsRequest) returns (ListAdminsResponse);
   // Counts resources based on specified filter and returnes the result
   rpc GetAdminsCount(GetAdminsCountRequest) returns (GetAdminsCountResponse);
@@ -74,6 +70,24 @@ service Admins {
   rpc CreateAdmin(CreateAdminRequest) returns (Admin);
   rpc UpdateAdmin(UpdateAdminRequest) returns (Admin);
   rpc DeleteAdmin(DeleteAdminRequest) returns (google.protobuf.Empty);
+
+  // User's RPCs
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  // Counts resources based on specified filter and returnes the result
+  rpc GetUsersCount(GetUsersCountRequest) returns (GetUsersCountResponse);
+  rpc GetUser(GetUserRequest) returns (User);
+  rpc CreateUser(CreateUserRequest) returns (User);
+  rpc UpdateUser(UpdateUserRequest) returns (User);
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty);
+
+  // Role's RPCs
+  rpc ListRoles(ListRolesRequest) returns (ListRolesResponse);
+  // Counts resources based on specified filter and returnes the result
+  rpc GetRolesCount(GetRolesCountRequest) returns (GetRolesCountResponse);
+  rpc GetRole(GetRoleRequest) returns (Role);
+  rpc CreateRole(CreateRoleRequest) returns (Role);
+  rpc UpdateRole(UpdateRoleRequest) returns (Role);
+  rpc DeleteRole(DeleteRoleRequest) returns (google.protobuf.Empty);
 }
 
 message ListAdminsRequest {
@@ -139,18 +153,6 @@ message User {
   // The last update timestamp of the user.
   // Output only.
   google.protobuf.Timestamp update_time = 8;
-}
-
-// User's service
-// provides user management related RPCs
-service Users {
-  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
-  // Counts resources based on specified filter and returnes the result
-  rpc GetUsersCount(GetUsersCountRequest) returns (GetUsersCountResponse);
-  rpc GetUser(GetUserRequest) returns (User);
-  rpc CreateUser(CreateUserRequest) returns (User);
-  rpc UpdateUser(UpdateUserRequest) returns (User);
-  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty);
 }
 
 message ListUsersRequest {
@@ -226,18 +228,6 @@ message Role {
   // The last update timestamp of the role.
   // Output only.
   google.protobuf.Timestamp update_time = 7;
-}
-
-// Role's service
-// Provides RPCs for managing roles
-service Roles {
-  rpc ListRoles(ListRolesRequest) returns (ListRolesResponse);
-  // Counts resources based on specified filter and returnes the result
-  rpc GetRolesCount(GetRolesCountRequest) returns (GetRolesCountResponse);
-  rpc GetRole(GetRoleRequest) returns (Role);
-  rpc CreateRole(CreateRoleRequest) returns (Role);
-  rpc UpdateRole(UpdateRoleRequest) returns (Role);
-  rpc DeleteRole(DeleteRoleRequest) returns (google.protobuf.Empty);
 }
 
 message ListRolesRequest {

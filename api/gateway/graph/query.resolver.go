@@ -7,12 +7,12 @@ import (
 	"context"
 
 	"github.com/vektah/gqlparser/gqlerror"
-	"go.xixo.com/api/gateway/auth"
 	"go.xixo.com/api/gateway/graph/generated"
 	"go.xixo.com/api/gateway/graph/marshaller"
 	"go.xixo.com/api/gateway/graph/model"
 	"go.xixo.com/api/gateway/grpcerror"
 	"go.xixo.com/api/pkg/str"
+	"go.xixo.com/api/pkg/token"
 	"go.xixo.com/api/services/account/domain/accounts"
 	"go.xixo.com/api/services/identity/domain/roles"
 	"go.xixo.com/api/services/identity/domain/users"
@@ -21,7 +21,7 @@ import (
 )
 
 func (r *queryResolver) Roles(ctx context.Context, first int, after *string) (*model.RolesConnection, error) {
-	res, err := r.rolesClient.ListRoles(ctx, &identitypb.ListRolesRequest{
+	res, err := r.identitySvcClient.ListRoles(ctx, &identitypb.ListRolesRequest{
 		PageSize:  int32(first),
 		PageToken: str.Dereference(after),
 	})
@@ -42,7 +42,7 @@ func (r *queryResolver) Roles(ctx context.Context, first int, after *string) (*m
 }
 
 func (r *queryResolver) Role(ctx context.Context, id string) (*model.Role, error) {
-	role, err := r.rolesClient.GetRole(ctx, &identitypb.GetRoleRequest{
+	role, err := r.identitySvcClient.GetRole(ctx, &identitypb.GetRoleRequest{
 		Name: roles.Name{RoleID: id}.String(),
 	})
 	if err != nil {
@@ -56,11 +56,11 @@ func (r *queryResolver) Role(ctx context.Context, id string) (*model.Role, error
 }
 
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	claims, ok := auth.ClaimsFromContext(ctx)
+	claims, ok := token.ClaimsFromContext(ctx)
 	if !ok {
 		return nil, gqlerror.Errorf("cannot get claims")
 	}
-	user, err := r.usersClient.GetUser(ctx, &identitypb.GetUserRequest{
+	user, err := r.identitySvcClient.GetUser(ctx, &identitypb.GetUserRequest{
 		Name: users.Name{AccountID: claims.AccountID, UserID: claims.Subject}.String(),
 	})
 	if err != nil {
@@ -74,11 +74,11 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 }
 
 func (r *queryResolver) Users(ctx context.Context, first int, after *string) (*model.UsersConnection, error) {
-	claims, ok := auth.ClaimsFromContext(ctx)
+	claims, ok := token.ClaimsFromContext(ctx)
 	if !ok {
 		return nil, gqlerror.Errorf("cannot get claims")
 	}
-	res, err := r.usersClient.ListUsers(ctx, &identitypb.ListUsersRequest{
+	res, err := r.identitySvcClient.ListUsers(ctx, &identitypb.ListUsersRequest{
 		Parent:    accounts.Name{AccountID: claims.AccountID}.String(),
 		PageSize:  int32(first),
 		PageToken: str.Dereference(after),
@@ -100,11 +100,11 @@ func (r *queryResolver) Users(ctx context.Context, first int, after *string) (*m
 }
 
 func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
-	claims, ok := auth.ClaimsFromContext(ctx)
+	claims, ok := token.ClaimsFromContext(ctx)
 	if !ok {
 		return nil, gqlerror.Errorf("cannot get claims")
 	}
-	user, err := r.usersClient.GetUser(ctx, &identitypb.GetUserRequest{
+	user, err := r.identitySvcClient.GetUser(ctx, &identitypb.GetUserRequest{
 		Name: users.Name{AccountID: claims.AccountID, UserID: id}.String(),
 	})
 	if err != nil {
@@ -118,11 +118,11 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 }
 
 func (r *queryResolver) Account(ctx context.Context) (*model.Account, error) {
-	claims, ok := auth.ClaimsFromContext(ctx)
+	claims, ok := token.ClaimsFromContext(ctx)
 	if !ok {
 		return nil, gqlerror.Errorf("cannot get claims")
 	}
-	account, err := r.accountsClient.GetAccount(ctx, &accountpb.GetAccountRequest{
+	account, err := r.accountSvcClient.GetAccount(ctx, &accountpb.GetAccountRequest{
 		Name: accounts.Name{AccountID: claims.AccountID}.String(),
 	})
 	if err != nil {

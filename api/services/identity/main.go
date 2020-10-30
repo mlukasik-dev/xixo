@@ -37,14 +37,16 @@ func main() {
 	validate := validator.New()
 
 	authSvc := auth.New(repo, jwtManager, validate)
-	rolesSvc := roles.New(repo, validate)
 	adminsSvc := admins.New(repo, validate)
 	usersSvc := users.New(repo, validate)
+	rolesSvc := roles.New(repo, validate)
 
-	authCtr := controller.NewAuthController(authSvc)
-	rolesCtr := controller.NewRolesController(rolesSvc)
-	adminsCtr := controller.NewAdminsController(adminsSvc)
-	usersCtr := controller.NewUsersController(usersSvc)
+	authCtr := controller.New(&controller.Services{
+		AuthSvc:   authSvc,
+		AdminsSvc: adminsSvc,
+		UsersSvc:  usersSvc,
+		RolesSvc:  rolesSvc,
+	})
 
 	authIntr := authr.NewServerInterceptor(&authr.ServerInterceptorConfig{
 		JWTManager: jwtManager,
@@ -69,10 +71,7 @@ func main() {
 		)),
 	)
 	reflection.Register(s)
-	identitypb.RegisterAuthServer(s, authCtr)
-	identitypb.RegisterRolesServer(s, rolesCtr)
-	identitypb.RegisterAdminsServer(s, adminsCtr)
-	identitypb.RegisterUsersServer(s, usersCtr)
+	identitypb.RegisterIdentityServiceServer(s, authCtr)
 
 	// TODO: move to config file
 	l, err := net.Listen("tcp", ":"+"50051")

@@ -1,7 +1,9 @@
 package postgres
 
 import (
+	"flag"
 	"fmt"
+	"log"
 	"os"
 
 	// importing postgres driver
@@ -19,7 +21,19 @@ var (
 )
 
 func init() {
-	godotenv.Load("identity-service/.env")
+	var envFile string
+	flag.StringVar(&envFile, "env-file", "", "env file")
+	flag.Parse()
+
+	if envFile != "" {
+		err := godotenv.Load(envFile)
+		if err != nil {
+			log.Fatalf("Failed to load environment variables from: %s\n", envFile)
+		} else {
+			log.Printf("Loaded environment variables from: %s\n", envFile)
+		}
+	}
+
 	host = os.Getenv("DB_HOST")
 	port = os.Getenv("DB_PORT")
 	user = os.Getenv("DB_USER")
@@ -32,7 +46,7 @@ func init() {
 func MustConnect() *sqlx.DB {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
 		"password=%s dbname=%s sslmode=disable",
-		"localhost", "5432", "postgres", "root", "identity")
+		host, port, user, password, dbname)
 
 	return sqlx.MustConnect("pgx", psqlInfo)
 }

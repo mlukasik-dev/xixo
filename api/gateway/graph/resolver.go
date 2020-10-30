@@ -1,6 +1,6 @@
-package graph
-
 //go:generate go run github.com/99designs/gqlgen
+
+package graph
 
 import (
 	"go.xixo.com/protobuf/accountpb"
@@ -9,26 +9,20 @@ import (
 
 // Resolver .
 type Resolver struct {
-	authClient     identitypb.AuthClient
-	rolesClient    identitypb.RolesClient
-	usersClient    identitypb.UsersClient
-	accountsClient accountpb.AccountsClient
+	accountSvcClient  accountpb.AccountServiceClient
+	identitySvcClient identitypb.IdentityServiceClient
 }
 
 // Clients config struct
 type Clients struct {
-	AuthClient     identitypb.AuthClient
-	RolesClient    identitypb.RolesClient
-	UsersClient    identitypb.UsersClient
-	AccountsClient accountpb.AccountsClient
+	AccountSvcClient  accountpb.AccountServiceClient
+	IdentitySvcClient identitypb.IdentityServiceClient
 }
 
 // NewResolver .
 func NewResolver(c *Clients) *Resolver {
 	return &Resolver{
-		authClient:     c.AuthClient,
-		rolesClient:    c.RolesClient,
-		usersClient:    c.UsersClient,
-		accountsClient: c.AccountsClient,
+		accountSvcClient:  c.AccountSvcClient,
+		identitySvcClient: c.IdentitySvcClient,
 	}
 }

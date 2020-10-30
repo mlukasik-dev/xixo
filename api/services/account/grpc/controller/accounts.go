@@ -14,18 +14,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type accountsCtr struct {
-	accountsSvc accounts.Service
-	usersClient identitypb.UsersClient
-}
-
-// NewAccountsController creates new account's gRPC controller
-func NewAccountsController(accountsSvc accounts.Service, usersClient identitypb.UsersClient) accountpb.AccountsServer {
-	return &accountsCtr{accountsSvc, usersClient}
-}
-
-func (ctr *accountsCtr) ListAccounts(ctx context.Context, req *accountpb.ListAccountsRequest) (*accountpb.ListAccountsResponse, error) {
-	accs, next, err := ctr.accountsSvc.ListAccounts(req.PageToken, req.PageSize)
+func (c *ctr) ListAccounts(ctx context.Context, req *accountpb.ListAccountsRequest) (*accountpb.ListAccountsResponse, error) {
+	accs, next, err := c.accountsSvc.ListAccounts(req.PageToken, req.PageSize)
 	if errors.Is(err, accounts.ErrPageSizeOurOfBoundaries) || errors.Is(err, accounts.ErrInvalidPageToken) {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
@@ -40,16 +30,16 @@ func (ctr *accountsCtr) ListAccounts(ctx context.Context, req *accountpb.ListAcc
 	return res, nil
 }
 
-func (ctr *accountsCtr) GetAccountsCount(ctx context.Context, req *accountpb.GetAccountsCountRequest) (*accountpb.GetAccountsCountResponse, error) {
-	count, err := ctr.accountsSvc.Count()
+func (c *ctr) GetAccountsCount(ctx context.Context, req *accountpb.GetAccountsCountRequest) (*accountpb.GetAccountsCountResponse, error) {
+	count, err := c.accountsSvc.Count()
 	if err != nil {
 		return nil, err
 	}
 	return &accountpb.GetAccountsCountResponse{Count: count}, nil
 }
 
-func (ctr *accountsCtr) GetAccount(ctx context.Context, req *accountpb.GetAccountRequest) (*accountpb.Account, error) {
-	account, err := ctr.accountsSvc.GetAccount(req.Name)
+func (c *ctr) GetAccount(ctx context.Context, req *accountpb.GetAccountRequest) (*accountpb.Account, error) {
+	account, err := c.accountsSvc.GetAccount(req.Name)
 	if errors.Is(err, accounts.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	}
@@ -59,8 +49,8 @@ func (ctr *accountsCtr) GetAccount(ctx context.Context, req *accountpb.GetAccoun
 	return marshaller.AccountToPb(account), nil
 }
 
-func (ctr *accountsCtr) CreateAccount(ctx context.Context, req *accountpb.CreateAccountRequest) (*accountpb.Account, error) {
-	account, err := ctr.accountsSvc.CreateAccount(marshaller.PbToCreateAccountInput(req.Account))
+func (c *ctr) CreateAccount(ctx context.Context, req *accountpb.CreateAccountRequest) (*accountpb.Account, error) {
+	account, err := c.accountsSvc.CreateAccount(marshaller.PbToCreateAccountInput(req.Account))
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +60,7 @@ func (ctr *accountsCtr) CreateAccount(ctx context.Context, req *accountpb.Create
 		Email:       req.AccountAdmin.Email,
 		PhoneNumber: req.AccountAdmin.PhoneNumber,
 	}
-	_, err = ctr.usersClient.CreateUser(ctx, &identitypb.CreateUserRequest{
+	_, err = c.identitySvcClient.CreateUser(ctx, &identitypb.CreateUserRequest{
 		Parent:      "accounts/" + account.ID,
 		User:        user,
 		InitialUser: true,
@@ -81,12 +71,12 @@ func (ctr *accountsCtr) CreateAccount(ctx context.Context, req *accountpb.Create
 	return marshaller.AccountToPb(account), nil
 }
 
-func (ctr *accountsCtr) UpdateAccount(ctx context.Context, req *accountpb.UpdateAccountRequest) (*accountpb.Account, error) {
+func (c *ctr) UpdateAccount(ctx context.Context, req *accountpb.UpdateAccountRequest) (*accountpb.Account, error) {
 	mask, err := marshaller.PbToUpdateMask(req.UpdateMask)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
-	account, err := ctr.accountsSvc.UpdateAccount(
+	account, err := c.accountsSvc.UpdateAccount(
 		req.Account.Name, mask, marshaller.PbToUpdateAccountInput(req.Account),
 	)
 	if errors.Is(err, accounts.ErrNotFound) {
@@ -98,8 +88,8 @@ func (ctr *accountsCtr) UpdateAccount(ctx context.Context, req *accountpb.Update
 	return marshaller.AccountToPb(account), nil
 }
 
-func (ctr *accountsCtr) DeleteAccount(ctx context.Context, req *accountpb.DeleteAccountRequest) (*empty.Empty, error) {
-	err := ctr.accountsSvc.DeleteAccount(req.Name)
+func (c *ctr) DeleteAccount(ctx context.Context, req *accountpb.DeleteAccountRequest) (*empty.Empty, error) {
+	err := c.accountsSvc.DeleteAccount(req.Name)
 	if errors.Is(err, accounts.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	}

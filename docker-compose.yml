@@ -1,33 +1,64 @@
 version: "3.8"
 
 services:
-  web:
-    build:
-      context: xixo-ui
-      dockerfile: Dockerfile.dev
-    restart: always
-    ports:
-      - 3000:3000
-    volumes:
-      - ./xixo-ui:/app
-      - /app/node_modules
-      - /app/.next
-    depends_on:
-      - api_gateway
-
   api_gateway:
     build:
-      context: xixo-api-gateway
-      dockerfile: Dockerfile
-    restart: always
+      context: .
+      dockerfile: api/gateway/Dockerfile
     ports:
       - 8080:8080
+    environment:
+      - PORT=8080
+      - AUTH_SECRET=secret
+      - IDENTITY_SERVICE_HOST=identity_service
+      - IDENTITY_SERVICE_PORT=50051
+      - ACCOUNT_SERVICE_HOST=account_service
+      - ACCOUNT_SERVICE_PORT=50052
+    depends_on:
+      - identity_service
+      - account_service
+
+  identity_service:
+    build:
+      context: .
+      dockerfile: api/services/identity/Dockerfile
+    ports:
+      - 50051:50051
+    environment:
+      - PORT=50051
+      - AUTH_SECRET=secret
+      - DB_HOST=postgres_db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=root
+      - DB_NAME=identity
     depends_on:
       - postgres_db
 
+  account_service:
+    build:
+      context: .
+      dockerfile: api/services/account/Dockerfile
+    ports:
+      - 50052:50052
+    environment:
+      - PORT=50052
+      - AUTH_SECRET=secret
+      - DB_HOST=postgres_db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=root
+      - DB_NAME=account
+    depends_on:
+      - postgres_db
+
+  redis_store:
+    image: redis:alpine
+    ports:
+      - 6379:6379
+
   postgres_db:
     image: postgres:13
-    restart: always
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root

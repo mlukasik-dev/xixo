@@ -23,8 +23,8 @@ message Account {
   google.protobuf.Timestamp update_time = 4;
 }
 
-// Accounts service
-service Accounts {
+// Account service
+service AccountService {
   // Returnes a list of accounts
   // uses pagination
   rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);

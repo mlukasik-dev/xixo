@@ -6,7 +6,6 @@ import (
 	"net"
 	"time"
 
-	"go.xixo.com/api/gateway/auth"
 	"go.xixo.com/api/pkg/authr"
 	"go.xixo.com/api/pkg/token"
 	"go.xixo.com/api/services/account/domain/accounts"
@@ -16,13 +15,14 @@ import (
 	"go.xixo.com/protobuf/identitypb"
 
 	"github.com/go-playground/validator/v10"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
-	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
+
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 )
 
 func main() {
@@ -36,15 +36,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("Err: %v\n", err)
 	}
-	usersClient := identitypb.NewUsersClient(identityConn)
+	identitySvcClient := identitypb.NewIdentityServiceClient(identityConn)
 
 	repo := postgres.NewRepository(postgres.MustConnect(), logger)
 	jwtManager := token.NewJWTManager("secret", time.Hour*24)
 	validate := validator.New()
 
 	accountsSvc := accounts.New(repo, logger, validate)
-
-	accountsCtr := controller.NewAccountsController(accountsSvc, usersClient)
+	accountsCtr := controller.New(accountsSvc, identitySvcClient)
 
 	authIntr := authr.NewServerInterceptor(&authr.ServerInterceptorConfig{
 		JWTManager: jwtManager,
@@ -65,7 +64,7 @@ func main() {
 		)),
 	)
 	reflection.Register(s)
-	accountpb.RegisterAccountsServer(s, accountsCtr)
+	accountpb.RegisterAccountServiceServer(s, accountsCtr)
 
 	// TODO: move to config file
 	l, err := net.Listen("tcp", ":"+"50052")
@@ -81,7 +80,7 @@ func main() {
 
 // TODO: move to pkg
 func unaryAuthInterceptor(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-	token, ok := auth.TokenFromContext(ctx)
+	token, ok := token.FromContext(ctx)
 	if !ok {
 		invoker(ctx, method, req, reply, cc, opts...)
 	}

@@ -26,7 +26,7 @@ func (r *userResolver) Roles(ctx context.Context, obj *model.User) ([]*model.Rol
 		for i, roleID := range obj.Roles {
 			go func(i int, id string) {
 				defer wg.Done()
-				rolePb, err := r.rolesClient.GetRole(ctx, &identitypb.GetRoleRequest{
+				rolePb, err := r.identitySvcClient.GetRole(ctx, &identitypb.GetRoleRequest{
 					Name: roles.Name{RoleID: id}.String(),
 				})
 				if err != nil {

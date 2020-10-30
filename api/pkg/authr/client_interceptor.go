@@ -3,7 +3,6 @@ package authr
 import (
 	"context"
 
-	"go.xixo.com/api/gateway/auth"
 	"go.xixo.com/api/pkg/token"
 
 	"go.uber.org/zap"
@@ -29,7 +28,7 @@ func (*ClientInterceptor) Unary() grpc.UnaryClientInterceptor {
 	return func(
 		ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption,
 	) error {
-		token, ok := auth.TokenFromContext(ctx)
+		token, ok := token.FromContext(ctx)
 		if !ok {
 			invoker(ctx, method, req, reply, cc, opts...)
 		}

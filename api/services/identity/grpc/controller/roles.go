@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"go.xixo.com/api/services/identity/domain"
-	"go.xixo.com/api/services/identity/domain/roles"
 	"go.xixo.com/api/services/identity/grpc/marshaller"
 	"go.xixo.com/protobuf/identitypb"
 
@@ -14,17 +13,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type rolesCtr struct {
-	rolesSvc roles.Service
-}
-
-// NewRolesController returns initialized roles gRPC controller
-func NewRolesController(rolesSvc roles.Service) identitypb.RolesServer {
-	return &rolesCtr{rolesSvc}
-}
-
-func (ctr *rolesCtr) ListRoles(ctx context.Context, req *identitypb.ListRolesRequest) (*identitypb.ListRolesResponse, error) {
-	roles, nextPageToken, err := ctr.rolesSvc.ListRoles(req.PageToken, req.PageSize, req.Filter)
+func (c *ctr) ListRoles(ctx context.Context, req *identitypb.ListRolesRequest) (*identitypb.ListRolesResponse, error) {
+	roles, nextPageToken, err := c.rolesSvc.ListRoles(req.PageToken, req.PageSize, req.Filter)
 	if errors.Is(err, domain.ErrInvalidPageToken) {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
@@ -38,8 +28,8 @@ func (ctr *rolesCtr) ListRoles(ctx context.Context, req *identitypb.ListRolesReq
 	return res, nil
 }
 
-func (ctr *rolesCtr) GetRolesCount(ctx context.Context, req *identitypb.GetRolesCountRequest) (*identitypb.GetRolesCountResponse, error) {
-	count, err := ctr.rolesSvc.Count()
+func (c *ctr) GetRolesCount(ctx context.Context, req *identitypb.GetRolesCountRequest) (*identitypb.GetRolesCountResponse, error) {
+	count, err := c.rolesSvc.Count()
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +38,8 @@ func (ctr *rolesCtr) GetRolesCount(ctx context.Context, req *identitypb.GetRoles
 	}, nil
 }
 
-func (ctr *rolesCtr) GetRole(ctx context.Context, req *identitypb.GetRoleRequest) (*identitypb.Role, error) {
-	role, err := ctr.rolesSvc.GetRole(req.Name)
+func (c *ctr) GetRole(ctx context.Context, req *identitypb.GetRoleRequest) (*identitypb.Role, error) {
+	role, err := c.rolesSvc.GetRole(req.Name)
 	if errors.Is(err, domain.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	}
@@ -59,20 +49,20 @@ func (ctr *rolesCtr) GetRole(ctx context.Context, req *identitypb.GetRoleRequest
 	return marshaller.RoleToPb(role), nil
 }
 
-func (ctr *rolesCtr) CreateRole(ctx context.Context, req *identitypb.CreateRoleRequest) (*identitypb.Role, error) {
-	role, err := ctr.rolesSvc.CreateRole(marshaller.PbToCreateRoleInput(req.Role))
+func (c *ctr) CreateRole(ctx context.Context, req *identitypb.CreateRoleRequest) (*identitypb.Role, error) {
+	role, err := c.rolesSvc.CreateRole(marshaller.PbToCreateRoleInput(req.Role))
 	if err != nil {
 		return nil, err
 	}
 	return marshaller.RoleToPb(role), nil
 }
 
-func (ctr *rolesCtr) UpdateRole(ctx context.Context, req *identitypb.UpdateRoleRequest) (*identitypb.Role, error) {
+func (c *ctr) UpdateRole(ctx context.Context, req *identitypb.UpdateRoleRequest) (*identitypb.Role, error) {
 	mask, err := marshaller.PbToRoleUpdateMask(req.UpdateMask)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
-	role, err := ctr.rolesSvc.UpdateRole(
+	role, err := c.rolesSvc.UpdateRole(
 		req.Role.Name, mask, marshaller.PbToUpdateRoleInput(req.Role),
 	)
 	if errors.Is(err, domain.ErrNotFound) {
@@ -84,8 +74,8 @@ func (ctr *rolesCtr) UpdateRole(ctx context.Context, req *identitypb.UpdateRoleR
 	return marshaller.RoleToPb(role), nil
 }
 
-func (ctr *rolesCtr) DeleteRole(ctx context.Context, req *identitypb.DeleteRoleRequest) (*empty.Empty, error) {
-	err := ctr.rolesSvc.DeleteRole(req.Name)
+func (c *ctr) DeleteRole(ctx context.Context, req *identitypb.DeleteRoleRequest) (*empty.Empty, error) {
+	err := c.rolesSvc.DeleteRole(req.Name)
 	if err != nil {
 		return nil, err
 	}
