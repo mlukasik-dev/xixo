@@ -3,17 +3,19 @@ package roles
 import (
 	"database/sql"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Role model
 type Role struct {
-	ID          string           `db:"role_id"`
-	AdminOnly   bool             `db:"admin_only"`
-	DisplayName string           `db:"display_name"`
-	Description string           `db:"description"`
-	Permissions []sql.NullString `db:"permissions"` // alias of ARRAY_AGG function
-	CreatedAt   time.Time        `db:"created_at"`
-	UpdatedAt   time.Time        `db:"updated_at"`
+	ID          uuid.UUID
+	AdminOnly   bool
+	DisplayName string
+	Description string
+	Permissions []sql.NullString
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 // Name returns role's resource name

@@ -7,12 +7,15 @@ import (
 	"context"
 	"sync"
 
+	"github.com/vektah/gqlparser/gqlerror"
 	"go.xixo.com/api/gateway/graph/generated"
-	"go.xixo.com/api/gateway/graph/marshaller"
 	"go.xixo.com/api/gateway/graph/model"
+	"go.xixo.com/api/gateway/graph/transform"
 	"go.xixo.com/api/gateway/grpcerror"
 	"go.xixo.com/api/services/identity/domain/roles"
 	"go.xixo.com/protobuf/identitypb"
+
+	"github.com/google/uuid"
 )
 
 func (r *userResolver) Roles(ctx context.Context, obj *model.User) ([]*model.Role, error) {
@@ -26,14 +29,19 @@ func (r *userResolver) Roles(ctx context.Context, obj *model.User) ([]*model.Rol
 		for i, roleID := range obj.Roles {
 			go func(i int, id string) {
 				defer wg.Done()
+				roleID, err := uuid.Parse(id)
+				if err != nil {
+					errCh <- gqlerror.Errorf("invalid role id")
+					return
+				}
 				rolePb, err := r.identitySvcClient.GetRole(ctx, &identitypb.GetRoleRequest{
-					Name: roles.Name{RoleID: id}.String(),
+					Name: roles.Name{RoleID: roleID}.String(),
 				})
 				if err != nil {
 					errCh <- grpcerror.GetError(err)
 					return
 				}
-				role, err := marshaller.PbToRole(rolePb)
+				role, err := transform.PbToRole(rolePb)
 				if err != nil {
 					errCh <- err
 					return

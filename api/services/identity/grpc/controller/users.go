@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"go.xixo.com/api/services/identity/domain"
-	"go.xixo.com/api/services/identity/grpc/marshaller"
+	"go.xixo.com/api/services/identity/grpc/transform"
 	"go.xixo.com/protobuf/identitypb"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -22,7 +22,7 @@ func (c *ctr) ListUsers(ctx context.Context, req *identitypb.ListUsersRequest) (
 		return nil, err
 	}
 	res := &identitypb.ListUsersResponse{
-		Users:         marshaller.UsersToPb(users),
+		Users:         transform.UsersToPb(users),
 		NextPageToken: nextPageToken,
 	}
 	return res, nil
@@ -47,24 +47,24 @@ func (c *ctr) GetUser(ctx context.Context, req *identitypb.GetUserRequest) (*ide
 		return nil, err
 	}
 
-	return marshaller.UserToPb(user), nil
+	return transform.UserToPb(user), nil
 }
 
 func (c *ctr) CreateUser(ctx context.Context, req *identitypb.CreateUserRequest) (*identitypb.User, error) {
-	user, err := c.usersSvc.CreateUser(req.Parent, marshaller.PbToCreateUserInput(req.User), req.InitialUser)
+	user, err := c.usersSvc.CreateUser(req.Parent, transform.PbToCreateUserInput(req.User), req.InitialUser)
 	if err != nil {
 		return nil, err
 	}
-	return marshaller.UserToPb(user), nil
+	return transform.UserToPb(user), nil
 }
 
 func (c *ctr) UpdateUser(ctx context.Context, req *identitypb.UpdateUserRequest) (*identitypb.User, error) {
-	mask, err := marshaller.PbToUserUpdateMask(req.UpdateMask)
+	mask, err := transform.PbToUserUpdateMask(req.UpdateMask)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 	user, err := c.usersSvc.UpdateUser(
-		req.User.Name, mask, marshaller.PbToUpdateUserInput(req.User),
+		req.User.Name, mask, transform.PbToUpdateUserInput(req.User),
 	)
 	if errors.Is(err, domain.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
@@ -73,7 +73,7 @@ func (c *ctr) UpdateUser(ctx context.Context, req *identitypb.UpdateUserRequest)
 		return nil, err
 	}
 
-	return marshaller.UserToPb(user), nil
+	return transform.UserToPb(user), nil
 }
 
 func (c *ctr) DeleteUser(ctx context.Context, req *identitypb.DeleteUserRequest) (*empty.Empty, error) {

@@ -8,6 +8,7 @@ import (
 	"go.xixo.com/api/pkg/cursor"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
 // UpdateMask .
@@ -56,10 +57,10 @@ func NewFilter(query string) (*Filter, error) {
 // Repository .
 type Repository interface {
 	FindRoles(cursor *cursor.Cursor, limit int32, filter *Filter) ([]*Role, error)
-	FindRoleByID(id string) (*Role, error)
+	FindRoleByID(roleID uuid.UUID) (*Role, error)
 	CreateRole(input *CreateRoleInput) (*Role, error)
-	UpdateRole(id string, mask *UpdateMask, input *UpdateRoleInput) (*Role, error)
-	DeleteRole(id string) error
+	UpdateRole(roleID uuid.UUID, mask *UpdateMask, input *UpdateRoleInput) (*Role, error)
+	DeleteRole(roleID uuid.UUID) error
 	CountRoles() (int32, error)
 }
 

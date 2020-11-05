@@ -1,4 +1,5 @@
-FROM golang:1.15-alpine
+# STEP 1: Build service
+FROM golang:1.15-alpine AS builder
 
 # Set necessary environmet variables needed for our image
 ENV GO111MODULE=on \
@@ -6,24 +7,20 @@ ENV GO111MODULE=on \
   GOOS=linux \
   GOARCH=amd64
 
-# Move to working directory /build
-WORKDIR /build
-
 # Copy go source files and download dependency using go mod
-COPY protobuf ./protobuf
-COPY api ./api
+COPY protobuf /build/protobuf
+COPY api /build/api
 # Move to directory with go.mod and go.sum
 WORKDIR /build/api
 RUN go mod download
 
 # Build the application
-RUN go build -o main ./gateway
+RUN go build -o api_gateway ./gateway
 
-# Move to /dist directory as the place for resulting binary folder
-WORKDIR /dist
+# STEP 2: Build a tiny image
+FROM scratch
 
-# Copy binary from build to main folder
-RUN cp /build/api/main .
+COPY --from=builder /build/api/api_gateway /dist/api_gateway
 
 # Command to run when starting the container
-CMD ["/dist/main"]
+CMD ["/dist/api_gateway"]

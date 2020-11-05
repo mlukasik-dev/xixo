@@ -1,4 +1,4 @@
-package marshaller
+package transform
 
 import (
 	"google.golang.org/genproto/protobuf/field_mask"

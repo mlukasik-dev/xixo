@@ -2,20 +2,32 @@ package admins
 
 import (
 	"time"
+
+	"github.com/google/uuid"
+	"go.xixo.com/api/services/identity/domain/roles"
 )
 
 // Admin database model of the admin
 type Admin struct {
-	ID        string    `db:"admin_id"`
-	FirstName string    `db:"first_name"`
-	LastName  string    `db:"last_name"`
-	Email     string    `db:"email"`
-	RoleIDs   []string  `db:"roles"` // alias of ARRAY_AGG function
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID        uuid.UUID
+	FirstName string
+	LastName  string
+	Email     string
+	Roles     []uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // Name returns admin's resource name
 func (a *Admin) Name() string {
 	return Name{AdminID: a.ID}.String()
+}
+
+// RoleNames returns slice of admin's role resource names
+func (a *Admin) RoleNames() []string {
+	var names []string
+	for _, id := range a.Roles {
+		names = append(names, roles.Name{RoleID: id}.String())
+	}
+	return names
 }

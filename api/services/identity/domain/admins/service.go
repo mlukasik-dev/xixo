@@ -6,10 +6,10 @@ import "github.com/go-playground/validator/v10"
 type Service interface {
 	ListAdmins(pageToken string, pageSize int32) ([]*Admin, string, error)
 	Count() (int32, error)
-	GetAdmin(id string) (*Admin, error)
-	CreateAdmin(input *CreateAdminInput) (*Admin, error)
-	UpdateAdmin(id string, mask *UpdateMask, input *UpdateAdminInput) (*Admin, error)
-	DeleteAdmin(id string) error
+	GetAdmin(name string) (*Admin, error)
+	CreateAdmin(input *Admin) (*Admin, error)
+	UpdateAdmin(name string, mask *UpdateMask, input *Admin) (*Admin, error)
+	DeleteAdmin(name string) error
 }
 
 type svc struct {

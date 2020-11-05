@@ -1,4 +1,4 @@
-package marshaller
+package transform
 
 import (
 	"go.xixo.com/api/gateway/graph/model"

@@ -1,11 +1,14 @@
 -- FUNCTION
-CREATE OR REPLACE FUNCTION updated_timestamp_func()
+CREATE OR REPLACE FUNCTION update_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
+  ASSERT
+    NEW.updated_at = OLD.updated_at AND NEW.created_at = OLD.created_at,
+    'created_at and updated_at columns are output only';
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE PLPGSQL;
 
 -- CREATING TRIGGERS
 DO $$
@@ -15,10 +18,11 @@ BEGIN
   FOR t IN
     SELECT table_name FROM information_schema.columns WHERE column_name = 'updated_at'
   LOOP
-    EXECUTE format('DROP TRIGGER IF EXISTS trigger_update_timestamp ON %I;
-                    CREATE TRIGGER trigger_update_timestamp
-                    BEFORE UPDATE ON %I
-                    FOR EACH ROW EXECUTE PROCEDURE updated_timestamp_func()', t,t);
+    EXECUTE format('DROP TRIGGER IF EXISTS update_timestamp ON %I;
+
+                    CREATE TRIGGER update_timestamp
+                      BEFORE UPDATE ON %I
+                    FOR EACH ROW EXECUTE PROCEDURE update_timestamp()', t, t);
   END loop;
 END;
-$$ language plpgsql;
+$$ LANGUAGE PLPGSQL;

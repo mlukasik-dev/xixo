@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"go.xixo.com/api/services/account/domain/accounts"
-	"go.xixo.com/api/services/account/grpc/marshaller"
+	"go.xixo.com/api/services/account/grpc/transform"
 	"go.xixo.com/protobuf/accountpb"
 	"go.xixo.com/protobuf/identitypb"
 
@@ -22,9 +22,8 @@ func (c *ctr) ListAccounts(ctx context.Context, req *accountpb.ListAccountsReque
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
-
 	res := &accountpb.ListAccountsResponse{
-		Accounts:      marshaller.AccountsToPb(accs),
+		Accounts:      transform.AccountsToPb(accs),
 		NextPageToken: next,
 	}
 	return res, nil
@@ -46,11 +45,11 @@ func (c *ctr) GetAccount(ctx context.Context, req *accountpb.GetAccountRequest) 
 	if err != nil {
 		return nil, err
 	}
-	return marshaller.AccountToPb(account), nil
+	return transform.AccountToPb(account), nil
 }
 
 func (c *ctr) CreateAccount(ctx context.Context, req *accountpb.CreateAccountRequest) (*accountpb.Account, error) {
-	account, err := c.accountsSvc.CreateAccount(marshaller.PbToCreateAccountInput(req.Account))
+	account, err := c.accountsSvc.CreateAccount(transform.PbToCreateAccountInput(req.Account))
 	if err != nil {
 		return nil, err
 	}
@@ -61,23 +60,23 @@ func (c *ctr) CreateAccount(ctx context.Context, req *accountpb.CreateAccountReq
 		PhoneNumber: req.AccountAdmin.PhoneNumber,
 	}
 	_, err = c.identitySvcClient.CreateUser(ctx, &identitypb.CreateUserRequest{
-		Parent:      "accounts/" + account.ID,
+		Parent:      account.Name(),
 		User:        user,
 		InitialUser: true,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return marshaller.AccountToPb(account), nil
+	return transform.AccountToPb(account), nil
 }
 
 func (c *ctr) UpdateAccount(ctx context.Context, req *accountpb.UpdateAccountRequest) (*accountpb.Account, error) {
-	mask, err := marshaller.PbToUpdateMask(req.UpdateMask)
+	mask, err := transform.PbToUpdateMask(req.UpdateMask)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 	account, err := c.accountsSvc.UpdateAccount(
-		req.Account.Name, mask, marshaller.PbToUpdateAccountInput(req.Account),
+		req.Account.Name, mask, transform.PbToUpdateAccountInput(req.Account),
 	)
 	if errors.Is(err, accounts.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
@@ -85,7 +84,7 @@ func (c *ctr) UpdateAccount(ctx context.Context, req *accountpb.UpdateAccountReq
 	if err != nil {
 		return nil, err
 	}
-	return marshaller.AccountToPb(account), nil
+	return transform.AccountToPb(account), nil
 }
 
 func (c *ctr) DeleteAccount(ctx context.Context, req *accountpb.DeleteAccountRequest) (*empty.Empty, error) {

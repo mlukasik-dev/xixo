@@ -2,7 +2,9 @@
 // for dealing with string, string slices and `sql.NullString` type
 package str
 
-import "database/sql"
+import (
+	"github.com/google/uuid"
+)
 
 // SliceContains returnes true if `s` - first argument
 // containes string `e` - second arguments, otherwise returnes false
@@ -15,13 +17,11 @@ func SliceContains(s []string, e string) bool {
 	return false
 }
 
-// NullStringsToStrings converts slice of `sql.NullString` to
-// slice of strings, omits "invalid" strings
-func NullStringsToStrings(nullSlice []sql.NullString) (slice []string) {
-	for _, s := range nullSlice {
-		if s.Valid {
-			slice = append(slice, s.String)
-		}
+// UUIDSliceToStrings cenverts slice of uuid.UUID to
+// slice of strings
+func UUIDSliceToStrings(uuidSlice []uuid.UUID) (slice []string) {
+	for _, id := range uuidSlice {
+		slice = append(slice, id.String())
 	}
 	return
 }

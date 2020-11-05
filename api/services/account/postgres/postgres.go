@@ -1,10 +1,12 @@
 package postgres
 
 import (
+	"database/sql"
+
 	"go.xixo.com/api/services/account/domain/accounts"
 	"go.xixo.com/api/services/account/domain/permissions"
+	"go.xixo.com/api/services/identity/postgres/gen"
 
-	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 )
 
@@ -15,11 +17,13 @@ type Repository interface {
 }
 
 type repo struct {
-	db     *sqlx.DB
+	db     *sql.DB
+	q      *gen.Queries
 	logger *zap.Logger
 }
 
 // NewRepository initializes and returns new aggregated repository
-func NewRepository(db *sqlx.DB, l *zap.Logger) Repository {
-	return &repo{db, l}
+func NewRepository(db *sql.DB, l *zap.Logger) Repository {
+	q := gen.New(db)
+	return &repo{db, q, l}
 }

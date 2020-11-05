@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"go.xixo.com/api/services/identity/domain"
-	"go.xixo.com/api/services/identity/grpc/marshaller"
+	"go.xixo.com/api/services/identity/grpc/transform"
 	"go.xixo.com/protobuf/identitypb"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -22,7 +22,7 @@ func (c *ctr) ListRoles(ctx context.Context, req *identitypb.ListRolesRequest) (
 		return nil, err
 	}
 	res := &identitypb.ListRolesResponse{
-		Roles:         marshaller.RolesToPb(roles),
+		Roles:         transform.RolesToPb(roles),
 		NextPageToken: nextPageToken,
 	}
 	return res, nil
@@ -46,24 +46,24 @@ func (c *ctr) GetRole(ctx context.Context, req *identitypb.GetRoleRequest) (*ide
 	if err != nil {
 		return nil, err
 	}
-	return marshaller.RoleToPb(role), nil
+	return transform.RoleToPb(role), nil
 }
 
 func (c *ctr) CreateRole(ctx context.Context, req *identitypb.CreateRoleRequest) (*identitypb.Role, error) {
-	role, err := c.rolesSvc.CreateRole(marshaller.PbToCreateRoleInput(req.Role))
+	role, err := c.rolesSvc.CreateRole(transform.PbToCreateRoleInput(req.Role))
 	if err != nil {
 		return nil, err
 	}
-	return marshaller.RoleToPb(role), nil
+	return transform.RoleToPb(role), nil
 }
 
 func (c *ctr) UpdateRole(ctx context.Context, req *identitypb.UpdateRoleRequest) (*identitypb.Role, error) {
-	mask, err := marshaller.PbToRoleUpdateMask(req.UpdateMask)
+	mask, err := transform.PbToRoleUpdateMask(req.UpdateMask)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 	role, err := c.rolesSvc.UpdateRole(
-		req.Role.Name, mask, marshaller.PbToUpdateRoleInput(req.Role),
+		req.Role.Name, mask, transform.PbToUpdateRoleInput(req.Role),
 	)
 	if errors.Is(err, domain.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
@@ -71,7 +71,7 @@ func (c *ctr) UpdateRole(ctx context.Context, req *identitypb.UpdateRoleRequest)
 	if err != nil {
 		return nil, err
 	}
-	return marshaller.RoleToPb(role), nil
+	return transform.RoleToPb(role), nil
 }
 
 func (c *ctr) DeleteRole(ctx context.Context, req *identitypb.DeleteRoleRequest) (*empty.Empty, error) {

@@ -7,13 +7,13 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/vektah/gqlparser/gqlerror"
 	"go.xixo.com/api/gateway/graph/generated"
-	"go.xixo.com/api/gateway/graph/marshaller"
 	"go.xixo.com/api/gateway/graph/model"
+	"go.xixo.com/api/gateway/graph/transform"
 	"go.xixo.com/api/gateway/grpcerror"
 	"go.xixo.com/api/pkg/token"
-	"go.xixo.com/api/services/identity/domain/roles"
 	"go.xixo.com/api/services/identity/domain/users"
 	"go.xixo.com/protobuf/identitypb"
 )
@@ -46,54 +46,19 @@ func (r *mutationResolver) Register(ctx context.Context, accountID string, email
 	return &model.RegisterPayload{Token: res.AccessToken}, nil
 }
 
-func (r *mutationResolver) CreateRole(ctx context.Context, input *model.CreateRoleInput) (*model.Role, error) {
-	role, err := r.identitySvcClient.CreateRole(ctx, marshaller.CreateRoleInputToPB(input))
-	if err != nil {
-		return nil, grpcerror.GetError(err)
-	}
-	res, err := marshaller.PbToRole(role)
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
-}
-
-func (r *mutationResolver) UpdateRole(ctx context.Context, id string, input *model.UpdateRoleInput) (*model.Role, error) {
-	req, err := marshaller.UpdateRoleInputToPB(id, input)
-	if err != nil {
-		return nil, err
-	}
-	role, err := r.identitySvcClient.UpdateRole(ctx, req)
-	if err != nil {
-		return nil, grpcerror.GetError(err)
-	}
-	res, err := marshaller.PbToRole(role)
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
-}
-
-func (r *mutationResolver) DeleteRole(ctx context.Context, id string) (*model.Role, error) {
-	_, err := r.identitySvcClient.DeleteRole(ctx, &identitypb.DeleteRoleRequest{
-		Name: roles.Name{RoleID: id}.String(),
-	})
-	if err != nil {
-		return nil, grpcerror.GetError(err)
-	}
-	return nil, nil
-}
-
 func (r *mutationResolver) CreateUser(ctx context.Context, input *model.CreateUserInput) (*model.User, error) {
 	claims, ok := token.ClaimsFromContext(ctx)
 	if !ok {
 		return nil, gqlerror.Errorf("cannot get claims")
 	}
-	user, err := r.identitySvcClient.CreateUser(ctx, marshaller.CreateUserInputToPB(claims.AccountID, input))
+	if claims.AccountID == nil {
+		return nil, gqlerror.Errorf("missed accountId")
+	}
+	user, err := r.identitySvcClient.CreateUser(ctx, transform.CreateUserInputToPB(claims.AccountID.String(), input))
 	if err != nil {
 		return nil, grpcerror.GetError(err)
 	}
-	res, err := marshaller.PbToUser(user)
+	res, err := transform.PbToUser(user)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +70,10 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input *mod
 	if !ok {
 		return nil, gqlerror.Errorf("cannot get claims")
 	}
-	req, err := marshaller.UpdateUserInputToPB(claims.AccountID, id, input)
+	if claims.AccountID == nil {
+		return nil, gqlerror.Errorf("missed accountId")
+	}
+	req, err := transform.UpdateUserInputToPB(claims.AccountID.String(), id, input)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +81,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input *mod
 	if err != nil {
 		return nil, grpcerror.GetError(err)
 	}
-	res, err := marshaller.PbToUser(user)
+	res, err := transform.PbToUser(user)
 	if err != nil {
 		return nil, err
 	}
@@ -125,8 +93,15 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (*model.De
 	if !ok {
 		return nil, gqlerror.Errorf("cannot get claims")
 	}
-	_, err := r.identitySvcClient.DeleteUser(ctx, &identitypb.DeleteUserRequest{
-		Name: users.Name{AccountID: claims.AccountID, UserID: id}.String(),
+	if claims.AccountID == nil {
+		return nil, gqlerror.Errorf("missed accountId")
+	}
+	userID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, gqlerror.Errorf("missed accountId")
+	}
+	_, err = r.identitySvcClient.DeleteUser(ctx, &identitypb.DeleteUserRequest{
+		Name: users.Name{AccountID: *claims.AccountID, UserID: userID}.String(),
 	})
 	if err != nil {
 		return nil, grpcerror.GetError(err)

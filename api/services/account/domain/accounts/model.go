@@ -1,13 +1,17 @@
 package accounts
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 // Account account business model
 type Account struct {
-	ID          string    `db:"account_id"`
-	DisplayName string    `db:"display_name"`
-	CreatedAt   time.Time `db:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at"`
+	ID          uuid.UUID
+	DisplayName string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 // Name returns account's resource name

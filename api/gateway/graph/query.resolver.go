@@ -6,10 +6,9 @@ package graph
 import (
 	"context"
 
-	"github.com/vektah/gqlparser/gqlerror"
 	"go.xixo.com/api/gateway/graph/generated"
-	"go.xixo.com/api/gateway/graph/marshaller"
 	"go.xixo.com/api/gateway/graph/model"
+	"go.xixo.com/api/gateway/graph/transform"
 	"go.xixo.com/api/gateway/grpcerror"
 	"go.xixo.com/api/pkg/str"
 	"go.xixo.com/api/pkg/token"
@@ -18,6 +17,9 @@ import (
 	"go.xixo.com/api/services/identity/domain/users"
 	"go.xixo.com/protobuf/accountpb"
 	"go.xixo.com/protobuf/identitypb"
+
+	"github.com/google/uuid"
+	"github.com/vektah/gqlparser/gqlerror"
 )
 
 func (r *queryResolver) Roles(ctx context.Context, first int, after *string) (*model.RolesConnection, error) {
@@ -28,7 +30,7 @@ func (r *queryResolver) Roles(ctx context.Context, first int, after *string) (*m
 	if err != nil {
 		return nil, grpcerror.GetError(err)
 	}
-	edges, err := marshaller.PbToRoleEdges(res.Roles)
+	edges, err := transform.PbToRoleEdges(res.Roles)
 	if err != nil {
 		return nil, err
 	}
@@ -42,13 +44,17 @@ func (r *queryResolver) Roles(ctx context.Context, first int, after *string) (*m
 }
 
 func (r *queryResolver) Role(ctx context.Context, id string) (*model.Role, error) {
+	roleID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, gqlerror.Errorf("invalid id provided")
+	}
 	role, err := r.identitySvcClient.GetRole(ctx, &identitypb.GetRoleRequest{
-		Name: roles.Name{RoleID: id}.String(),
+		Name: roles.Name{RoleID: roleID}.String(),
 	})
 	if err != nil {
 		return nil, grpcerror.GetError(err)
 	}
-	res, err := marshaller.PbToRole(role)
+	res, err := transform.PbToRole(role)
 	if err != nil {
 		return nil, err
 	}
@@ -60,13 +66,20 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 	if !ok {
 		return nil, gqlerror.Errorf("cannot get claims")
 	}
+	if claims.AccountID == nil {
+		return nil, gqlerror.Errorf("missed accountId")
+	}
+	userID, err := uuid.Parse(claims.Subject)
+	if err != nil {
+		return nil, gqlerror.Errorf("invalid id provided")
+	}
 	user, err := r.identitySvcClient.GetUser(ctx, &identitypb.GetUserRequest{
-		Name: users.Name{AccountID: claims.AccountID, UserID: claims.Subject}.String(),
+		Name: users.Name{AccountID: *claims.AccountID, UserID: userID}.String(),
 	})
 	if err != nil {
 		return nil, grpcerror.GetError(err)
 	}
-	res, err := marshaller.PbToUser(user)
+	res, err := transform.PbToUser(user)
 	if err != nil {
 		return nil, err
 	}
@@ -78,15 +91,18 @@ func (r *queryResolver) Users(ctx context.Context, first int, after *string) (*m
 	if !ok {
 		return nil, gqlerror.Errorf("cannot get claims")
 	}
+	if claims.AccountID == nil {
+		return nil, gqlerror.Errorf("missed accountId")
+	}
 	res, err := r.identitySvcClient.ListUsers(ctx, &identitypb.ListUsersRequest{
-		Parent:    accounts.Name{AccountID: claims.AccountID}.String(),
+		Parent:    accounts.Name{AccountID: *claims.AccountID}.String(),
 		PageSize:  int32(first),
 		PageToken: str.Dereference(after),
 	})
 	if err != nil {
 		return nil, grpcerror.GetError(err)
 	}
-	edges, err := marshaller.PbToUserEdges(res.Users)
+	edges, err := transform.PbToUserEdges(res.Users)
 	if err != nil {
 		return nil, err
 	}
@@ -104,13 +120,20 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 	if !ok {
 		return nil, gqlerror.Errorf("cannot get claims")
 	}
+	if claims.AccountID == nil {
+		return nil, gqlerror.Errorf("missed accountId")
+	}
+	userID, err := uuid.Parse(claims.Subject)
+	if err != nil {
+		return nil, gqlerror.Errorf("invalid id provided")
+	}
 	user, err := r.identitySvcClient.GetUser(ctx, &identitypb.GetUserRequest{
-		Name: users.Name{AccountID: claims.AccountID, UserID: id}.String(),
+		Name: users.Name{AccountID: *claims.AccountID, UserID: userID}.String(),
 	})
 	if err != nil {
 		return nil, grpcerror.GetError(err)
 	}
-	res, err := marshaller.PbToUser(user)
+	res, err := transform.PbToUser(user)
 	if err != nil {
 		return nil, err
 	}
@@ -122,13 +145,16 @@ func (r *queryResolver) Account(ctx context.Context) (*model.Account, error) {
 	if !ok {
 		return nil, gqlerror.Errorf("cannot get claims")
 	}
+	if claims.AccountID == nil {
+		return nil, gqlerror.Errorf("missed accountId")
+	}
 	account, err := r.accountSvcClient.GetAccount(ctx, &accountpb.GetAccountRequest{
-		Name: accounts.Name{AccountID: claims.AccountID}.String(),
+		Name: accounts.Name{AccountID: *claims.AccountID}.String(),
 	})
 	if err != nil {
 		return nil, grpcerror.GetError(err)
 	}
-	res, err := marshaller.PbToAccount(account)
+	res, err := transform.PbToAccount(account)
 	if err != nil {
 		return nil, err
 	}

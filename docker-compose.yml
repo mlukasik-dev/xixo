@@ -27,6 +27,7 @@ services:
     environment:
       - PORT=50051
       - AUTH_SECRET=secret
+      - AUTH_TOKEN_DURATION_MINUTES=60
       - DB_HOST=postgres_db
       - DB_PORT=5432
       - DB_USER=postgres
@@ -44,6 +45,7 @@ services:
     environment:
       - PORT=50052
       - AUTH_SECRET=secret
+      - AUTH_TOKEN_DURATION_MINUTES=60
       - DB_HOST=postgres_db
       - DB_PORT=5432
       - DB_USER=postgres
@@ -51,11 +53,6 @@ services:
       - DB_NAME=account
     depends_on:
       - postgres_db
-
-  redis_store:
-    image: redis:alpine
-    ports:
-      - 6379:6379
 
   postgres_db:
     image: postgres:13

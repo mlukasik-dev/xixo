@@ -6,6 +6,7 @@ import (
 
 	"go.xixo.com/api/pkg/token"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -15,7 +16,7 @@ import (
 
 // Checker .
 type Checker interface {
-	CheckPermission(ctx context.Context, roleID, method string) (bool, error)
+	CheckPermission(ctx context.Context, roleID uuid.UUID, method string) (bool, error)
 }
 
 // ServerInterceptor authentication gRPC interceptor
@@ -76,7 +77,6 @@ func (i *ServerInterceptor) authorize(ctx context.Context, method string) (*toke
 	if i.whiteList[method] {
 		return nil, nil
 	}
-
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil, status.Errorf(codes.Unauthenticated, "metadata is not provided")

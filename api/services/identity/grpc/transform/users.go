@@ -1,4 +1,4 @@
-package marshaller
+package transform
 
 import (
 	"go.xixo.com/api/services/identity/domain/roles"
@@ -16,17 +16,11 @@ func UserToPb(u *users.User) *identitypb.User {
 		FirstName:   u.FirstName,
 		LastName:    u.LastName,
 		Email:       u.Email,
+		RoleNames:   u.RoleNames(),
 		PhoneNumber: u.PhoneNumber.String,
 		CreateTime:  timestamppb.New(u.CreatedAt),
 		UpdateTime:  timestamppb.New(u.UpdatedAt),
 	}
-
-	var roleIDs []string
-	for _, id := range u.RoleIDs {
-		roleIDs = append(roleIDs, "roles/"+id)
-	}
-	pb.RoleNames = roleIDs
-
 	return pb
 }
 
@@ -51,9 +45,9 @@ func PbToCreateUserInput(i *identitypb.User) *users.CreateUserInput {
 	for _, n := range i.RoleNames {
 		// TODO: handle error
 		name, _ := roles.ParseResourceName(n)
-		roleIDs = append(roleIDs, name.RoleID)
+		roleIDs = append(roleIDs, name.RoleID.String())
 	}
-	input.RoleIDs = roleIDs
+	input.Roles = roleIDs
 	return input
 }
 
@@ -69,9 +63,9 @@ func PbToUpdateUserInput(i *identitypb.User) *users.UpdateUserInput {
 	for _, n := range i.RoleNames {
 		// TODO: handle error
 		name, _ := roles.ParseResourceName(n)
-		roleIDs = append(roleIDs, name.RoleID)
+		roleIDs = append(roleIDs, name.RoleID.String())
 	}
-	input.RoleIDs = roleIDs
+	input.Roles = roleIDs
 	return input
 }
 
@@ -96,7 +90,7 @@ func PbToUserUpdateMask(pb *field_mask.FieldMask) (*users.UpdateMask, error) {
 			mask.PhoneNumber = true
 			break
 		case "role_names":
-			mask.RoleIDs = true
+			mask.Roles = true
 			break
 		}
 	}

@@ -1,8 +1,6 @@
 package users
 
 import (
-	"fmt"
-
 	"go.xixo.com/api/pkg/cursor"
 	"go.xixo.com/api/services/identity/domain"
 )
@@ -94,7 +92,6 @@ func (s *svc) UpdateUser(n string, mask *UpdateMask, input *UpdateUserInput) (*U
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("accountID: %s, userID: %s\n", name.AccountID, name.UserID)
 	user, err := s.repo.UpdateUser(name.AccountID, name.UserID, mask, input)
 	if err != nil {
 		return nil, err

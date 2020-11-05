@@ -1,5 +1,11 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- https://dba.stackexchange.com/questions/68266/what-is-the-best-way-to-store-an-email-address-in-postgresql
+CREATE DOMAIN email AS TEXT
+  CHECK (
+    value ~ '^[a-zA-Z0-9.!#$%&''*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$'
+);
+
 CREATE TABLE IF NOT EXISTS roles (
   PRIMARY KEY (role_id),
   role_id uuid DEFAULT uuid_generate_v4(),
@@ -24,7 +30,7 @@ CREATE TABLE IF NOT EXISTS permissions (
   permission_id uuid DEFAULT uuid_generate_v4(),
   -- When role is deleted all associated permissions will be deleted
   role_id uuid NOT NULL REFERENCES roles ON DELETE CASCADE,
-  method varchar(255) NOT NULL, /* gRPC method */
+  method text NOT NULL, /* gRPC method */
   created_at timestamp NOT NULL DEFAULT NOW(),
   updated_at timestamp NOT NULL DEFAULT NOW(),
   -- No rows with same role_id and method
@@ -36,8 +42,8 @@ CREATE TABLE IF NOT EXISTS admins (
   admin_id uuid DEFAULT uuid_generate_v4(),
   first_name varchar(35) NOT NULL,
   last_name varchar(35) NOT NULL,
-  email varchar(254) UNIQUE NOT NULL,
-  password varchar(255), /* if NULL means admin was created, but not registered yet */
+  email text UNIQUE NOT NULL,
+  password text, /* if NULL means admin was created, but not registered yet */
   created_at timestamp NOT NULL DEFAULT NOW(),
   updated_at timestamp NOT NULL DEFAULT NOW()
 );
@@ -56,7 +62,7 @@ CREATE TABLE IF NOT EXISTS users (
   account_id uuid NOT NULL, /* reference to the accounts table from account-service */
   first_name varchar(35) NOT NULL,
   last_name varchar(35) NOT NULL,
-  email varchar(254) NOT NULL,
+  email text NOT NULL,
   password varchar(255), /* if NULL means user was created, but not registered yet */
   phone_number varchar(15), /* max digits is 15 all spaces must be removed */
   created_at timestamp NOT NULL DEFAULT NOW(),

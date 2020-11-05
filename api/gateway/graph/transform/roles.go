@@ -1,6 +1,7 @@
-package marshaller
+package transform
 
 import (
+	"github.com/google/uuid"
 	"go.xixo.com/api/gateway/graph/model"
 	"go.xixo.com/api/pkg/cursor"
 	"go.xixo.com/api/pkg/str"
@@ -18,7 +19,7 @@ func PbToRole(pb *identitypb.Role) (*model.Role, error) {
 		return nil, err
 	}
 	return &model.Role{
-		ID:          name.RoleID,
+		ID:          name.RoleID.String(),
 		DisplayName: pb.DisplayName,
 		Description: &pb.Description,
 		Permissions: PbToPermissions(pb.Permissions),
@@ -74,23 +75,28 @@ func roleNamesToRoleIDs(roleNames []string) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		roleIDs = append(roleIDs, name.RoleID)
+		roleIDs = append(roleIDs, name.RoleID.String())
 	}
 	return roleIDs, nil
 }
 
-func roleIDsToRoleNames(roleIDs []string) []string {
+func roleIDsToRoleNames(roleIDs []string) ([]string, error) {
 	var roleNames []string
 	for _, roleID := range roleIDs {
-		roleNames = append(roleNames, roles.Name{RoleID: roleID}.String())
+		uuid, err := uuid.Parse(roleID)
+		if err != nil {
+			return nil, err
+		}
+		roleNames = append(roleNames, roles.Name{RoleID: uuid}.String())
 	}
-	return roleNames
+	return roleNames, nil
 }
 
 // PbToRoleEdges .
 func PbToRoleEdges(roles []*identitypb.Role) (edges []*model.RoleEdge, err error) {
 	for _, role := range roles {
 		r, err := PbToRole(role)
+		uuid, err := uuid.Parse(r.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -98,7 +104,7 @@ func PbToRoleEdges(roles []*identitypb.Role) (edges []*model.RoleEdge, err error
 			Node: r,
 			Cursor: cursor.Encode(&cursor.Cursor{
 				Timestamp: role.CreateTime.AsTime(),
-				UUID:      r.ID,
+				UUID:      uuid,
 			}),
 		})
 	}

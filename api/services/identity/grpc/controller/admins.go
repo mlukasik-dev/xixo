@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"go.xixo.com/api/services/identity/domain"
-	"go.xixo.com/api/services/identity/grpc/marshaller"
+	"go.xixo.com/api/services/identity/grpc/transform"
 	"go.xixo.com/protobuf/identitypb"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -22,7 +22,7 @@ func (c *ctr) ListAdmins(ctx context.Context, req *identitypb.ListAdminsRequest)
 		return nil, err
 	}
 	res := &identitypb.ListAdminsResponse{
-		Admins:        marshaller.AdminsToPb(admins),
+		Admins:        transform.AdminsToPb(admins),
 		NextPageToken: nextPageToken,
 	}
 	return res, nil
@@ -46,24 +46,24 @@ func (c *ctr) GetAdmin(ctx context.Context, req *identitypb.GetAdminRequest) (*i
 	if err != nil {
 		return nil, err
 	}
-	return marshaller.AdminToPb(user), nil
+	return transform.AdminToPb(user), nil
 }
 
 func (c *ctr) CreateAdmin(ctx context.Context, req *identitypb.CreateAdminRequest) (*identitypb.Admin, error) {
-	user, err := c.adminsSvc.CreateAdmin(marshaller.PbToCreateAdminInput(req.Admin))
+	user, err := c.adminsSvc.CreateAdmin(transform.PbToAdmin(req.Admin))
 	if err != nil {
 		return nil, err
 	}
-	return marshaller.AdminToPb(user), nil
+	return transform.AdminToPb(user), nil
 }
 
 func (c *ctr) UpdateAdmin(ctx context.Context, req *identitypb.UpdateAdminRequest) (*identitypb.Admin, error) {
-	mask, err := marshaller.PbToAdminUpdateMask(req.UpdateMask)
+	mask, err := transform.PbToAdminUpdateMask(req.UpdateMask)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 	user, err := c.adminsSvc.UpdateAdmin(
-		req.Admin.Name, mask, marshaller.PbToUpdateAdminInput(req.Admin),
+		req.Admin.Name, mask, transform.PbToAdmin(req.Admin),
 	)
 	if errors.Is(err, domain.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
@@ -71,7 +71,7 @@ func (c *ctr) UpdateAdmin(ctx context.Context, req *identitypb.UpdateAdminReques
 	if err != nil {
 		return nil, err
 	}
-	return marshaller.AdminToPb(user), nil
+	return transform.AdminToPb(user), nil
 }
 
 func (c *ctr) DeleteAdmin(ctx context.Context, req *identitypb.DeleteAdminRequest) (*empty.Empty, error) {

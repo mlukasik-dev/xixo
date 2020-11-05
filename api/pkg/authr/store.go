@@ -2,11 +2,13 @@ package authr
 
 import (
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 // Permission .
 type Permission struct {
-	RoleID string
+	RoleID uuid.UUID
 	Method string
 }
 

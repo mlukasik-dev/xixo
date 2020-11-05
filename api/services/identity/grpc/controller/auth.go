@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"go.xixo.com/api/services/identity/domain"
 	"go.xixo.com/api/services/identity/domain/auth"
 	"go.xixo.com/protobuf/identitypb"
@@ -17,7 +18,11 @@ func (c *ctr) Login(ctx context.Context, req *identitypb.LoginRequest) (*identit
 	var err error
 	if req.AccountId != "" {
 		// Authenticate as user
-		token, err = c.authSvc.LoginUser(req.AccountId, req.Email, req.Password)
+		accountID, err := uuid.Parse(req.AccountId)
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid uuid")
+		}
+		token, err = c.authSvc.LoginUser(accountID, req.Email, req.Password)
 	} else {
 		// Authenticate as admin
 		token, err = c.authSvc.LoginAdmin(req.Email, req.Password)
@@ -42,7 +47,11 @@ func (c *ctr) Register(ctx context.Context, req *identitypb.RegisterRequest) (*i
 	var err error
 	if req.AccountId != "" {
 		// Register as user
-		token, err = c.authSvc.RegisterUser(req.AccountId, req.Email, req.Password)
+		accountID, err := uuid.Parse(req.AccountId)
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid uuid")
+		}
+		token, err = c.authSvc.RegisterUser(accountID, req.Email, req.Password)
 	} else {
 		// Register as admin
 		token, err = c.authSvc.RegisterAdmin(req.Email, req.Password)

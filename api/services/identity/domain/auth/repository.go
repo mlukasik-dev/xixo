@@ -1,25 +1,27 @@
 package auth
 
+import "github.com/google/uuid"
+
 // Repository .
 type Repository interface {
-	CheckUsersPassword(accountID, email string, plainPassword string) (bool, error)
-	SetUsersPassword(accountID, email string, plainPassword string) error
+	CheckUsersPassword(accountID uuid.UUID, email string, plainPassword string) (bool, error)
+	UpdateUsersPassword(accountID uuid.UUID, email string, plainPassword string) error
 	CheckAdminsPassword(email string, plainPassword string) (bool, error)
-	SetAdminsPassword(email string, plainPassword string) error
+	UpdateAdminsPassword(email string, plainPassword string) error
 	FindAdminInfoByEmail(email string) (*AdminInfo, error)
-	FindUserInfoByEmail(accountID, email string) (*UserInfo, error)
+	FindUserInfoByEmail(accountID uuid.UUID, email string) (*UserInfo, error)
 }
 
 // AdminInfo .
 type AdminInfo struct {
-	ID         string
-	RoleIDs    []string
+	ID         uuid.UUID
+	Roles      []uuid.UUID
 	Registered bool
 }
 
 // UserInfo .
 type UserInfo struct {
-	ID         string
-	RoleIDs    []string
+	ID         uuid.UUID
+	Roles      []uuid.UUID
 	Registered bool
 }

@@ -1,6 +1,8 @@
 package auth
 
-func (s *svc) LoginUser(accountID, email, password string) (string, error) {
+import "github.com/google/uuid"
+
+func (s *svc) LoginUser(accountID uuid.UUID, email, password string) (string, error) {
 	matches, err := s.repo.CheckUsersPassword(accountID, email, password)
 	if err != nil {
 		return "", err
@@ -12,7 +14,7 @@ func (s *svc) LoginUser(accountID, email, password string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	token, err := s.jwtManager.Generate(false, accountID, info.ID, info.RoleIDs)
+	token, err := s.jwtManager.Generate(false, &accountID, info.ID, info.Roles)
 	if err != nil {
 		return "", err
 	}
@@ -31,14 +33,14 @@ func (s *svc) LoginAdmin(email, password string) (string, error) {
 	if err != nil {
 		return "", nil
 	}
-	token, err := s.jwtManager.Generate(true, "", info.ID, info.RoleIDs)
+	token, err := s.jwtManager.Generate(true, nil, info.ID, info.Roles)
 	if err != nil {
 		return "", err
 	}
 	return token, nil
 }
 
-func (s *svc) RegisterUser(accountID, email, password string) (string, error) {
+func (s *svc) RegisterUser(accountID uuid.UUID, email, password string) (string, error) {
 	info, err := s.repo.FindUserInfoByEmail(accountID, email)
 	if err != nil {
 		return "", err
@@ -47,11 +49,11 @@ func (s *svc) RegisterUser(accountID, email, password string) (string, error) {
 		return "", ErrAlreadyRegistered
 	}
 	// Update user with password
-	err = s.repo.SetUsersPassword(accountID, email, password)
+	err = s.repo.UpdateUsersPassword(accountID, email, password)
 	if err != nil {
 		return "", err
 	}
-	token, err := s.jwtManager.Generate(false, accountID, info.ID, info.RoleIDs)
+	token, err := s.jwtManager.Generate(false, &accountID, info.ID, info.Roles)
 	if err != nil {
 		return "", err
 	}
@@ -67,11 +69,11 @@ func (s *svc) RegisterAdmin(email, password string) (string, error) {
 		return "", ErrAlreadyRegistered
 	}
 	// Update admin with password
-	err = s.repo.SetAdminsPassword(email, password)
+	err = s.repo.UpdateAdminsPassword(email, password)
 	if err != nil {
 		return "", err
 	}
-	token, err := s.jwtManager.Generate(true, "", info.ID, info.RoleIDs)
+	token, err := s.jwtManager.Generate(true, nil, info.ID, info.Roles)
 	if err != nil {
 		return "", err
 	}

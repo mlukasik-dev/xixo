@@ -1,9 +1,13 @@
 package postgres
 
-import "context"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 // Checks if this role has permissions to use this method
-func (r *repo) CheckPermission(ctx context.Context, roleID, method string) (hasPermission bool, err error) {
+func (r *repo) CheckPermission(ctx context.Context, roleID uuid.UUID, method string) (hasPermission bool, err error) {
 	const query = `
 		SELECT EXISTS (
 			SELECT permission_id FROM permissions

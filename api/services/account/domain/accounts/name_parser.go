@@ -3,6 +3,8 @@ package accounts
 import (
 	"regexp"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 // https://stackoverflow.com/questions/25051675/how-to-validate-uuid-v4-in-go
@@ -12,25 +14,25 @@ var validName = regexp.MustCompile("^" + "accounts/" + uuidPattern + "$")
 
 // Name .
 type Name struct {
-	AccountID string
+	AccountID uuid.UUID
 }
 
 func (n Name) String() string {
-	return "accounts/" + n.AccountID
+	return "accounts/" + n.AccountID.String()
 }
 
 // ParseResourceName .
 func ParseResourceName(name string) (*Name, error) {
-	// allow empty (case of resource creation)
-	if name == "" {
-		return &Name{}, nil
-	}
 	if !validName.MatchString(name) {
 		return nil, ErrInvalidResourceName
 	}
 	s := strings.Split(name, "/")
+	accountID, err := uuid.Parse(s[1])
+	if err != nil {
+		return nil, err
+	}
 	return &Name{
-		AccountID: s[1],
+		AccountID: accountID,
 	}, nil
 }
 

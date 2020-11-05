@@ -60,14 +60,11 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateRole    func(childComplexity int, input *model.CreateRoleInput) int
 		CreateUser    func(childComplexity int, input *model.CreateUserInput) int
-		DeleteRole    func(childComplexity int, id string) int
 		DeleteUser    func(childComplexity int, id string) int
 		Login         func(childComplexity int, accountID string, email string, password string) int
 		Register      func(childComplexity int, accountID string, email string, password string) int
 		UpdateAccount func(childComplexity int, input *model.UpdateAccountInput) int
-		UpdateRole    func(childComplexity int, id string, input *model.UpdateRoleInput) int
 		UpdateUser    func(childComplexity int, id string, input *model.UpdateUserInput) int
 	}
 
@@ -138,9 +135,6 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	Login(ctx context.Context, accountID string, email string, password string) (*model.LoginPayload, error)
 	Register(ctx context.Context, accountID string, email string, password string) (*model.RegisterPayload, error)
-	CreateRole(ctx context.Context, input *model.CreateRoleInput) (*model.Role, error)
-	UpdateRole(ctx context.Context, id string, input *model.UpdateRoleInput) (*model.Role, error)
-	DeleteRole(ctx context.Context, id string) (*model.Role, error)
 	CreateUser(ctx context.Context, input *model.CreateUserInput) (*model.User, error)
 	UpdateUser(ctx context.Context, id string, input *model.UpdateUserInput) (*model.User, error)
 	DeleteUser(ctx context.Context, id string) (*model.DeleteUserPayload, error)
@@ -208,18 +202,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.LoginPayload.Token(childComplexity), true
 
-	case "Mutation.createRole":
-		if e.complexity.Mutation.CreateRole == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_createRole_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.CreateRole(childComplexity, args["input"].(*model.CreateRoleInput)), true
-
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
 			break
@@ -231,18 +213,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(*model.CreateUserInput)), true
-
-	case "Mutation.deleteRole":
-		if e.complexity.Mutation.DeleteRole == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_deleteRole_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.DeleteRole(childComplexity, args["id"].(string)), true
 
 	case "Mutation.deleteUser":
 		if e.complexity.Mutation.DeleteUser == nil {
@@ -291,18 +261,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateAccount(childComplexity, args["input"].(*model.UpdateAccountInput)), true
-
-	case "Mutation.updateRole":
-		if e.complexity.Mutation.UpdateRole == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateRole_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdateRole(childComplexity, args["id"].(string), args["input"].(*model.UpdateRoleInput)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -647,10 +605,6 @@ type Mutation {
     email: String!
     password: String!
   ): RegisterPayload
-  # Roles
-  createRole(input: CreateRoleInput): Role
-  updateRole(id: ID!, input: UpdateRoleInput): Role
-  deleteRole(id: ID!): Role
   # Users
   createUser(input: CreateUserInput): User
   updateUser(id: ID!, input: UpdateUserInput): User
@@ -722,7 +676,7 @@ input PermissionsInput {
 }
 
 type Role {
-  id: String!
+  id: ID!
   displayName: String!
   description: String
   permissions: [Permission]!
@@ -778,21 +732,6 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Mutation_createRole_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *model.CreateRoleInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOCreateRoleInput2ᚖgoᚗxixoᚗcomᚋapiᚋgatewayᚋgraphᚋmodelᚐCreateRoleInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -805,21 +744,6 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 		}
 	}
 	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_deleteRole_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
 	return args, nil
 }
 
@@ -916,30 +840,6 @@ func (ec *executionContext) field_Mutation_updateAccount_args(ctx context.Contex
 		}
 	}
 	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updateRole_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	var arg1 *model.UpdateRoleInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalOUpdateRoleInput2ᚖgoᚗxixoᚗcomᚋapiᚋgatewayᚋgraphᚋmodelᚐUpdateRoleInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg1
 	return args, nil
 }
 
@@ -1349,123 +1249,6 @@ func (ec *executionContext) _Mutation_register(ctx context.Context, field graphq
 	res := resTmp.(*model.RegisterPayload)
 	fc.Result = res
 	return ec.marshalORegisterPayload2ᚖgoᚗxixoᚗcomᚋapiᚋgatewayᚋgraphᚋmodelᚐRegisterPayload(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_createRole(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_createRole_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateRole(rctx, args["input"].(*model.CreateRoleInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Role)
-	fc.Result = res
-	return ec.marshalORole2ᚖgoᚗxixoᚗcomᚋapiᚋgatewayᚋgraphᚋmodelᚐRole(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_updateRole(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_updateRole_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateRole(rctx, args["id"].(string), args["input"].(*model.UpdateRoleInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Role)
-	fc.Result = res
-	return ec.marshalORole2ᚖgoᚗxixoᚗcomᚋapiᚋgatewayᚋgraphᚋmodelᚐRole(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_deleteRole(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_deleteRole_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteRole(rctx, args["id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Role)
-	fc.Result = res
-	return ec.marshalORole2ᚖgoᚗxixoᚗcomᚋapiᚋgatewayᚋgraphᚋmodelᚐRole(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2061,7 +1844,7 @@ func (ec *executionContext) _Role_id(ctx context.Context, field graphql.Collecte
 	}
 	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Role_displayName(ctx context.Context, field graphql.CollectedField, obj *model.Role) (ret graphql.Marshaler) {
@@ -4268,12 +4051,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_login(ctx, field)
 		case "register":
 			out.Values[i] = ec._Mutation_register(ctx, field)
-		case "createRole":
-			out.Values[i] = ec._Mutation_createRole(ctx, field)
-		case "updateRole":
-			out.Values[i] = ec._Mutation_updateRole(ctx, field)
-		case "deleteRole":
-			out.Values[i] = ec._Mutation_deleteRole(ctx, field)
 		case "createUser":
 			out.Values[i] = ec._Mutation_createUser(ctx, field)
 		case "updateUser":
@@ -5524,14 +5301,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
-func (ec *executionContext) unmarshalOCreateRoleInput2ᚖgoᚗxixoᚗcomᚋapiᚋgatewayᚋgraphᚋmodelᚐCreateRoleInput(ctx context.Context, v interface{}) (*model.CreateRoleInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputCreateRoleInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalOCreateUserInput2ᚖgoᚗxixoᚗcomᚋapiᚋgatewayᚋgraphᚋmodelᚐCreateUserInput(ctx context.Context, v interface{}) (*model.CreateUserInput, error) {
 	if v == nil {
 		return nil, nil
@@ -5643,14 +5412,6 @@ func (ec *executionContext) unmarshalOUpdateAccountInput2ᚖgoᚗxixoᚗcomᚋap
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputUpdateAccountInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOUpdateRoleInput2ᚖgoᚗxixoᚗcomᚋapiᚋgatewayᚋgraphᚋmodelᚐUpdateRoleInput(ctx context.Context, v interface{}) (*model.UpdateRoleInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputUpdateRoleInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

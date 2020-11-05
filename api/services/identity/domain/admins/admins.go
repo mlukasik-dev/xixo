@@ -55,7 +55,7 @@ func (s *svc) GetAdmin(n string) (*Admin, error) {
 	return admin, nil
 }
 
-func (s *svc) CreateAdmin(adminInput *CreateAdminInput) (admin *Admin, err error) {
+func (s *svc) CreateAdmin(adminInput *Admin) (admin *Admin, err error) {
 	admin, err = s.repo.CreateAdmin(adminInput)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (s *svc) CreateAdmin(adminInput *CreateAdminInput) (admin *Admin, err error
 	return
 }
 
-func (s *svc) UpdateAdmin(n string, mask *UpdateMask, adminInput *UpdateAdminInput) (*Admin, error) {
+func (s *svc) UpdateAdmin(n string, mask *UpdateMask, adminInput *Admin) (*Admin, error) {
 	name, err := ParseResourceName(n)
 	if err != nil {
 		return nil, err

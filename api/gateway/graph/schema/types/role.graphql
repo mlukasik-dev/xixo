@@ -7,7 +7,7 @@ input PermissionsInput {
 }
 
 type Role {
-  id: String!
+  id: ID!
   displayName: String!
   description: String
   permissions: [Permission]!

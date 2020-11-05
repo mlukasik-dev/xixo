@@ -4,6 +4,7 @@ import (
 	"go.xixo.com/api/pkg/cursor"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
 // UpdateMask .
@@ -12,18 +13,18 @@ type UpdateMask struct {
 	LastName    bool
 	PhoneNumber bool
 	Email       bool
-	RoleIDs     bool
+	Roles       bool
 }
 
 // Repository user's repository
 type Repository interface {
-	FindUsers(accountID string, cursor *cursor.Cursor, limit int32) ([]*User, error)
-	FindUserByID(accountID, userID string) (*User, error)
-	CreateUser(accountID string, input *CreateUserInput) (*User, error)
-	CreateAccountAdmin(accountID string, input *CreateUserInput) (*User, error)
-	UpdateUser(accountID, userID string, mask *UpdateMask, input *UpdateUserInput) (*User, error)
-	DeleteUser(accountID, userID string) error
-	CountUsers(accountID string) (int32, error)
+	FindUsers(accountID uuid.UUID, cursor *cursor.Cursor, limit int32) ([]*User, error)
+	FindUserByID(accountID, userID uuid.UUID) (*User, error)
+	CreateUser(accountID uuid.UUID, input *CreateUserInput) (*User, error)
+	CreateAccountAdmin(accountID uuid.UUID, input *CreateUserInput) (*User, error)
+	UpdateUser(accountID, userID uuid.UUID, mask *UpdateMask, input *UpdateUserInput) (*User, error)
+	DeleteUser(accountID, userID uuid.UUID) error
+	CountUsers(accountID uuid.UUID) (int32, error)
 }
 
 // CreateUserInput .
@@ -32,7 +33,7 @@ type CreateUserInput struct {
 	LastName    string   `validate:"omitempty"`
 	PhoneNumber string   `validate:"omitempty"`
 	Email       string   `validate:"required,email"`
-	RoleIDs     []string `validate:"dive,uuid4,omitempty"`
+	Roles       []string `validate:"dive,uuid4,omitempty"`
 }
 
 // Validate .
@@ -46,7 +47,7 @@ type UpdateUserInput struct {
 	LastName    string   `validate:"omitempty"`
 	PhoneNumber string   `validate:"omitempty"`
 	Email       string   `validate:"omitempty,email"`
-	RoleIDs     []string `validate:"dive,uuid4,omitempty"`
+	Roles       []string `validate:"dive,uuid4,omitempty"`
 }
 
 // Validate .

@@ -4,10 +4,10 @@ import (
 	"context"
 	"log"
 	"net"
-	"time"
 
 	"go.xixo.com/api/pkg/authr"
 	"go.xixo.com/api/pkg/token"
+	"go.xixo.com/api/services/account/config"
 	"go.xixo.com/api/services/account/domain/accounts"
 	"go.xixo.com/api/services/account/grpc/controller"
 	"go.xixo.com/api/services/account/postgres"
@@ -34,12 +34,12 @@ func main() {
 
 	identityConn, err := grpc.Dial(":50051", grpc.WithInsecure(), grpc.WithUnaryInterceptor(unaryAuthInterceptor))
 	if err != nil {
-		log.Fatalf("Err: %v\n", err)
+		log.Fatalf("Failed to dial identity service: %v\n", err)
 	}
 	identitySvcClient := identitypb.NewIdentityServiceClient(identityConn)
 
 	repo := postgres.NewRepository(postgres.MustConnect(), logger)
-	jwtManager := token.NewJWTManager("secret", time.Hour*24)
+	jwtManager := token.NewJWTManager(config.Global.Auth.Secret, config.Global.Auth.TokenDuration)
 	validate := validator.New()
 
 	accountsSvc := accounts.New(repo, logger, validate)
@@ -66,8 +66,7 @@ func main() {
 	reflection.Register(s)
 	accountpb.RegisterAccountServiceServer(s, accountsCtr)
 
-	// TODO: move to config file
-	l, err := net.Listen("tcp", ":"+"50052")
+	l, err := net.Listen("tcp", config.Global.Port.String())
 	if err != nil {
 		panic(err)
 	}

@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 	"net"
-	"time"
 
 	"go.xixo.com/api/pkg/authr"
 	"go.xixo.com/api/pkg/token"
+	"go.xixo.com/api/services/identity/config"
 	"go.xixo.com/api/services/identity/domain/admins"
 	"go.xixo.com/api/services/identity/domain/auth"
 	"go.xixo.com/api/services/identity/domain/roles"
@@ -32,8 +32,8 @@ func main() {
 	}
 	defer logger.Sync()
 
-	repo := postgres.NewRepository(postgres.MustConnect())
-	jwtManager := token.NewJWTManager("secret", time.Hour*24)
+	repo := postgres.NewRepository(postgres.MustConnect(), logger)
+	jwtManager := token.NewJWTManager(config.Global.Auth.Secret, config.Global.Auth.TokenDuration)
 	validate := validator.New()
 
 	authSvc := auth.New(repo, jwtManager, validate)
@@ -53,8 +53,8 @@ func main() {
 		Logger:     logger,
 		Checker:    repo,
 		WhiteList: map[string]bool{
-			"/xixo.identity.v1.Auth/Login":    true,
-			"/xixo.identity.v1.Auth/Register": true,
+			"/xixo.identity.v1.IdentityService/Login":    true,
+			"/xixo.identity.v1.IdentityService/Register": true,
 		},
 	})
 
@@ -73,8 +73,7 @@ func main() {
 	reflection.Register(s)
 	identitypb.RegisterIdentityServiceServer(s, authCtr)
 
-	// TODO: move to config file
-	l, err := net.Listen("tcp", ":"+"50051")
+	l, err := net.Listen("tcp", config.Global.Port.String())
 	if err != nil {
 		panic(err)
 	}

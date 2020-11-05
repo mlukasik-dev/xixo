@@ -1,6 +1,7 @@
-package marshaller
+package transform
 
 import (
+	"github.com/google/uuid"
 	"go.xixo.com/api/gateway/graph/model"
 	"go.xixo.com/api/pkg/cursor"
 	"go.xixo.com/api/pkg/str"
@@ -22,7 +23,7 @@ func PbToUser(pb *identitypb.User) (*model.User, error) {
 		return nil, err
 	}
 	return &model.User{
-		ID:          name.UserID,
+		ID:          name.UserID.String(),
 		FirstName:   pb.FirstName,
 		LastName:    pb.LastName,
 		Email:       pb.Email,
@@ -49,8 +50,13 @@ func CreateUserInputToPB(accountID string, input *model.CreateUserInput) *identi
 
 // UpdateUserInputToPB .
 func UpdateUserInputToPB(accountID, userID string, i *model.UpdateUserInput) (*identitypb.UpdateUserRequest, error) {
+	accountUUID, err := uuid.Parse(accountID)
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, err
+	}
 	user := &identitypb.User{
-		Name:        users.Name{AccountID: accountID, UserID: userID}.String(),
+		Name:        users.Name{AccountID: accountUUID, UserID: userUUID}.String(),
 		FirstName:   str.Dereference(i.FirstName),
 		LastName:    str.Dereference(i.LastName),
 		Email:       str.Dereference(i.Email),
@@ -80,6 +86,10 @@ func UpdateUserInputToPB(accountID, userID string, i *model.UpdateUserInput) (*i
 func PbToUserEdges(users []*identitypb.User) (edges []*model.UserEdge, err error) {
 	for _, user := range users {
 		r, err := PbToUser(user)
+		uuid, err := uuid.Parse(r.ID)
+		if err != nil {
+			return nil, err
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -87,7 +97,7 @@ func PbToUserEdges(users []*identitypb.User) (edges []*model.UserEdge, err error
 			Node: r,
 			Cursor: cursor.Encode(&cursor.Cursor{
 				Timestamp: user.CreateTime.AsTime(),
-				UUID:      r.ID,
+				UUID:      uuid,
 			}),
 		})
 	}

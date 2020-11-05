@@ -4,13 +4,14 @@ import (
 	"go.xixo.com/api/pkg/token"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
 // Service defines authentication service
 type Service interface {
-	LoginUser(accountID, email, password string) (string, error)
+	LoginUser(accountID uuid.UUID, email, password string) (string, error)
 	LoginAdmin(email, password string) (string, error)
-	RegisterUser(accountID, email, password string) (string, error)
+	RegisterUser(accountID uuid.UUID, email, password string) (string, error)
 	RegisterAdmin(email, password string) (string, error)
 }
 

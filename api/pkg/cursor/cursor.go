@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Cursor .
 type Cursor struct {
 	Timestamp time.Time
-	UUID      string
+	UUID      uuid.UUID
 }
 
 // Decode .
@@ -31,14 +33,18 @@ func Decode(encodedCursor string) (*Cursor, error) {
 	if err != nil {
 		return nil, err
 	}
+	id, err := uuid.Parse(arrStr[1])
+	if err != nil {
+		return nil, err
+	}
 	return &Cursor{
 		Timestamp: t,
-		UUID:      arrStr[1],
+		UUID:      id,
 	}, nil
 }
 
 // Encode .
 func Encode(c *Cursor) string {
-	key := fmt.Sprintf("%s#%s", c.Timestamp.Format(time.RFC3339Nano), c.UUID)
+	key := fmt.Sprintf("%s#%s", c.Timestamp.Format(time.RFC3339Nano), c.UUID.String())
 	return base64.StdEncoding.EncodeToString([]byte(key))
 }

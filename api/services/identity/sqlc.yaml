@@ -1,0 +1,7 @@
+version: "1"
+packages:
+  - name: gen
+    path: ./postgres/gen
+    schema: ./postgres/migrations
+    queries: ./postgres/queries
+    engine: postgresql

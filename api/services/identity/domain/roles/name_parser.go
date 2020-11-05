@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/google/uuid"
 	"go.xixo.com/api/services/identity/domain"
 )
 
@@ -15,11 +16,11 @@ var validName = regexp.MustCompile("^" + "roles" + "/" + uuidPattern + "$")
 
 // Name .
 type Name struct {
-	RoleID string
+	RoleID uuid.UUID
 }
 
 func (n Name) String() string {
-	return "roles/" + n.RoleID
+	return "roles/" + n.RoleID.String()
 }
 
 // ParseResourceName .
@@ -28,12 +29,12 @@ func ParseResourceName(name string) (*Name, error) {
 		return nil, fmt.Errorf("role %w", domain.ErrInvalidName)
 	}
 	s := strings.Split(name, "/")
+	id, err := uuid.Parse(s[1])
 	return &Name{
-		RoleID: s[1],
-	}, nil
+		RoleID: id,
+	}, err
 }
 
 // ParseCollectionName .
 func ParseCollectionName() {
-
 }

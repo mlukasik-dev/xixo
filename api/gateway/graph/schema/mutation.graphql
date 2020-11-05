@@ -14,10 +14,6 @@ type Mutation {
     email: String!
     password: String!
   ): RegisterPayload
-  # Roles
-  createRole(input: CreateRoleInput): Role
-  updateRole(id: ID!, input: UpdateRoleInput): Role
-  deleteRole(id: ID!): Role
   # Users
   createUser(input: CreateUserInput): User
   updateUser(id: ID!, input: UpdateUserInput): User

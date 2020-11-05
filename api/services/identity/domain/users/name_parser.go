@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/google/uuid"
 	"go.xixo.com/api/services/identity/domain"
 )
 
@@ -16,12 +17,12 @@ var validCollectionName = regexp.MustCompile("^" + "accounts/" + uuidPattern + "
 
 // Name .
 type Name struct {
-	AccountID string
-	UserID    string
+	AccountID uuid.UUID
+	UserID    uuid.UUID
 }
 
 func (n Name) String() string {
-	return "accounts/" + n.AccountID + "/users/" + n.UserID
+	return fmt.Sprintf("accounts/%s/users/%s", n.AccountID, n.UserID)
 }
 
 // ParseResourceName .
@@ -30,10 +31,12 @@ func ParseResourceName(name string) (*Name, error) {
 		return nil, fmt.Errorf("user %w", domain.ErrInvalidName)
 	}
 	s := strings.Split(name, "/")
+	accountID, err := uuid.Parse(s[1])
+	userID, err := uuid.Parse(s[3])
 	return &Name{
-		AccountID: s[1],
-		UserID:    s[3],
-	}, nil
+		AccountID: accountID,
+		UserID:    userID,
+	}, err
 }
 
 // ParseCollectionName .
@@ -42,7 +45,8 @@ func ParseCollectionName(name string) (*Name, error) {
 		return nil, fmt.Errorf("user %w", domain.ErrInvalidName)
 	}
 	s := strings.Split(name, "/")
+	accountID, err := uuid.Parse(s[1])
 	return &Name{
-		AccountID: s[1],
-	}, nil
+		AccountID: accountID,
+	}, err
 }
