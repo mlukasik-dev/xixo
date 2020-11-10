@@ -14,7 +14,7 @@ import (
 )
 
 func (c *ctr) ListRoles(ctx context.Context, req *identitypb.ListRolesRequest) (*identitypb.ListRolesResponse, error) {
-	roles, nextPageToken, err := c.rolesSvc.ListRoles(req.PageToken, req.PageSize, req.Filter)
+	roles, nextPageToken, err := c.rolesSvc.ListRoles(ctx, req.PageToken, req.PageSize, req.Filter)
 	if errors.Is(err, domain.ErrInvalidPageToken) {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
@@ -29,7 +29,7 @@ func (c *ctr) ListRoles(ctx context.Context, req *identitypb.ListRolesRequest) (
 }
 
 func (c *ctr) GetRolesCount(ctx context.Context, req *identitypb.GetRolesCountRequest) (*identitypb.GetRolesCountResponse, error) {
-	count, err := c.rolesSvc.Count()
+	count, err := c.rolesSvc.Count(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (c *ctr) GetRolesCount(ctx context.Context, req *identitypb.GetRolesCountRe
 }
 
 func (c *ctr) GetRole(ctx context.Context, req *identitypb.GetRoleRequest) (*identitypb.Role, error) {
-	role, err := c.rolesSvc.GetRole(req.Name)
+	role, err := c.rolesSvc.GetRole(ctx, req.Name)
 	if errors.Is(err, domain.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	}
@@ -50,7 +50,7 @@ func (c *ctr) GetRole(ctx context.Context, req *identitypb.GetRoleRequest) (*ide
 }
 
 func (c *ctr) CreateRole(ctx context.Context, req *identitypb.CreateRoleRequest) (*identitypb.Role, error) {
-	role, err := c.rolesSvc.CreateRole(transform.PbToCreateRoleInput(req.Role))
+	role, err := c.rolesSvc.CreateRole(ctx, transform.PbToRole(req.Role))
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *ctr) UpdateRole(ctx context.Context, req *identitypb.UpdateRoleRequest)
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 	role, err := c.rolesSvc.UpdateRole(
-		req.Role.Name, mask, transform.PbToUpdateRoleInput(req.Role),
+		ctx, req.Role.Name, mask, transform.PbToRole(req.Role),
 	)
 	if errors.Is(err, domain.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
@@ -75,7 +75,7 @@ func (c *ctr) UpdateRole(ctx context.Context, req *identitypb.UpdateRoleRequest)
 }
 
 func (c *ctr) DeleteRole(ctx context.Context, req *identitypb.DeleteRoleRequest) (*empty.Empty, error) {
-	err := c.rolesSvc.DeleteRole(req.Name)
+	err := c.rolesSvc.DeleteRole(ctx, req.Name)
 	if err != nil {
 		return nil, err
 	}

@@ -1,33 +1,82 @@
 package postgres
 
 import (
-	"github.com/google/uuid"
+	"context"
+	"database/sql"
+	"errors"
+	"fmt"
+
 	"go.xixo.com/api/pkg/cursor"
 	"go.xixo.com/api/services/account/domain/accounts"
+	"go.xixo.com/api/services/account/postgres/gen"
+
+	"github.com/google/uuid"
 )
 
-var _ accounts.Repository = (*repo)(nil)
+var _ accounts.Repository = (*Repository)(nil)
 
-func (r *repo) FindAccounts(cursor *cursor.Cursor, limit int32) ([]*accounts.Account, error) {
-	panic("not implemented") // TODO: Implement
+// FindAccounts .
+func (r *Repository) FindAccounts(ctx context.Context, cursor *cursor.Cursor, limit int32) ([]accounts.Account, error) {
+	var items []accounts.Account
+	var err error
+	if cursor == nil {
+		// first request
+		items, err = r.q.FindAccounts(ctx, limit)
+	} else {
+		items, err = r.q.FindAccountsCursor(ctx, gen.FindAccountsCursorParams{
+			Limit:     limit,
+			AccountID: cursor.UUID,
+			CreatedAt: cursor.Timestamp,
+		})
+	}
+	return items, err
 }
 
-func (r *repo) FindAccountByID(accoundID uuid.UUID) (*accounts.Account, error) {
-	panic("not implemented") // TODO: Implement
+// FindAccountByID .
+func (r *Repository) FindAccountByID(ctx context.Context, accountID uuid.UUID) (*accounts.Account, error) {
+	account, err := r.q.FindAccountByID(ctx, accountID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("account %w", err)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &account, err
 }
 
-func (r *repo) CreateAccount(input *accounts.CreateAccountInput) (*accounts.Account, error) {
-	panic("not implemented") // TODO: Implement
+// CreateAccount .
+func (r *Repository) CreateAccount(ctx context.Context, input *accounts.Account) (*accounts.Account, error) {
+	account, err := r.q.CreateAccount(ctx, input.DisplayName)
+	return &account, err
 }
 
-func (r *repo) UpdateAccount(accoundID uuid.UUID, mask *accounts.UpdateMask, input *accounts.UpdateAccountInput) (*accounts.Account, error) {
-	panic("not implemented") // TODO: Implement
+// UpdateAccount .
+func (r *Repository) UpdateAccount(ctx context.Context, accountID uuid.UUID, mask *accounts.UpdateMask, input *accounts.Account) (*accounts.Account, error) {
+	account, err := r.q.UpdateAccount(ctx, gen.UpdateAccountParams{
+		AccountID:               accountID,
+		DisplayName:             input.DisplayName,
+		ShouldUpdateDisplayName: mask.DisplayName,
+	})
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("account %w", err)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &account, err
 }
 
-func (r *repo) DeleteAccount(accoundID uuid.UUID) error {
-	panic("not implemented") // TODO: Implement
+// DeleteAccount .
+func (r *Repository) DeleteAccount(ctx context.Context, accountID uuid.UUID) error {
+	err := r.q.DeleteAccount(ctx, accountID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("account %w", err)
+	}
+	return err
 }
 
-func (r *repo) Count() (int32, error) {
-	panic("not implemented") // TODO: Implement
+// CountAccounts .
+func (r *Repository) CountAccounts(ctx context.Context) (int32, error) {
+	count, err := r.q.CountAccounts(ctx)
+	return int32(count), err
 }

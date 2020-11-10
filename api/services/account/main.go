@@ -48,7 +48,7 @@ func main() {
 	authIntr := authr.NewServerInterceptor(&authr.ServerInterceptorConfig{
 		JWTManager: jwtManager,
 		Logger:     logger,
-		Checker:    repo,
+		Checker:    nil, // TODO: use real value
 	})
 
 	s := grpc.NewServer(

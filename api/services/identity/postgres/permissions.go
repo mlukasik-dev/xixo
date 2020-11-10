@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// Checks if this role has permissions to use this method
-func (r *repo) CheckPermission(ctx context.Context, roleID uuid.UUID, method string) (hasPermission bool, err error) {
+// CheckPermission checks if this role has permissions to use this method
+func (r *Repository) CheckPermission(ctx context.Context, roleID uuid.UUID, method string) (hasPermission bool, err error) {
 	const query = `
 		SELECT EXISTS (
 			SELECT permission_id FROM permissions

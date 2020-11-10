@@ -1,12 +1,30 @@
 package accounts
 
 import (
+	"context"
+
 	"go.xixo.com/api/pkg/cursor"
+
+	"github.com/go-playground/validator/v10"
+	"go.uber.org/zap"
 )
 
 const maxPageSize = 1000
 
-func (s *svc) ListAccounts(pageToken string, pageSize int32) (accounts []*Account, nextPageToken string, err error) {
+// Service account's service.
+type Service struct {
+	repo     Repository
+	logger   *zap.Logger
+	validate *validator.Validate
+}
+
+// New returns initialized account's service instance
+func New(r Repository, l *zap.Logger, v *validator.Validate) *Service {
+	return &Service{r, l, v}
+}
+
+// ListAccounts .
+func (s *Service) ListAccounts(ctx context.Context, pageToken string, pageSize int32) (accounts []Account, nextPageToken string, err error) {
 	if pageSize < 1 || pageSize > maxPageSize {
 		return nil, "", ErrPageSizeOurOfBoundaries
 	}
@@ -18,7 +36,7 @@ func (s *svc) ListAccounts(pageToken string, pageSize int32) (accounts []*Accoun
 			return nil, "", ErrInvalidPageToken
 		}
 	}
-	accounts, err = s.repo.FindAccounts(c, pageSize)
+	accounts, err = s.repo.FindAccounts(ctx, c, pageSize)
 	if err != nil {
 		return nil, "", err
 	}
@@ -35,20 +53,22 @@ func (s *svc) ListAccounts(pageToken string, pageSize int32) (accounts []*Accoun
 	return accounts, nextPageToken, nil
 }
 
-func (s *svc) Count() (int32, error) {
-	count, err := s.repo.Count()
+// CountAccounts .
+func (s *Service) CountAccounts(ctx context.Context) (int32, error) {
+	count, err := s.repo.CountAccounts(ctx)
 	if err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
-func (s *svc) GetAccount(n string) (*Account, error) {
+// GetAccount .
+func (s *Service) GetAccount(ctx context.Context, n string) (*Account, error) {
 	name, err := ParseResourceName(n)
 	if err != nil {
 		return nil, ErrInvalidResourceName
 	}
-	account, err := s.repo.FindAccountByID(name.AccountID)
+	account, err := s.repo.FindAccountByID(ctx, name.AccountID)
 	if err != nil {
 		return nil, err
 	}
@@ -56,12 +76,9 @@ func (s *svc) GetAccount(n string) (*Account, error) {
 	return account, nil
 }
 
-func (s *svc) CreateAccount(input *CreateAccountInput) (*Account, error) {
-	err := input.Validate(s.validate)
-	if err != nil {
-		return nil, err
-	}
-	account, err := s.repo.CreateAccount(input)
+// CreateAccount .
+func (s *Service) CreateAccount(ctx context.Context, input *Account) (*Account, error) {
+	account, err := s.repo.CreateAccount(ctx, input)
 	if err != nil {
 		return nil, err
 	}
@@ -69,16 +86,13 @@ func (s *svc) CreateAccount(input *CreateAccountInput) (*Account, error) {
 	return account, nil
 }
 
-func (s *svc) UpdateAccount(n string, mask *UpdateMask, input *UpdateAccountInput) (*Account, error) {
+// UpdateAccount .
+func (s *Service) UpdateAccount(ctx context.Context, n string, mask *UpdateMask, input *Account) (*Account, error) {
 	name, err := ParseResourceName(n)
 	if err != nil {
 		return nil, ErrInvalidResourceName
 	}
-	err = input.Validate(s.validate)
-	if err != nil {
-		return nil, err
-	}
-	account, err := s.repo.UpdateAccount(name.AccountID, mask, input)
+	account, err := s.repo.UpdateAccount(ctx, name.AccountID, mask, input)
 	if err != nil {
 		return nil, err
 	}
@@ -86,10 +100,11 @@ func (s *svc) UpdateAccount(n string, mask *UpdateMask, input *UpdateAccountInpu
 	return account, nil
 }
 
-func (s *svc) DeleteAccount(n string) error {
+// DeleteAccount .
+func (s *Service) DeleteAccount(ctx context.Context, n string) error {
 	name, err := ParseResourceName(n)
 	if err != nil {
 		return ErrInvalidResourceName
 	}
-	return s.repo.DeleteAccount(name.AccountID)
+	return s.repo.DeleteAccount(ctx, name.AccountID)
 }

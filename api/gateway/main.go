@@ -47,11 +47,11 @@ func main() {
 
 	identityConn, err := grpc.Dial(identitySvcHost+":"+identitySvcPort, grpc.WithInsecure(), grpc.WithUnaryInterceptor(authIntr.Unary()))
 	if err != nil {
-		log.Fatalf("Err: %v\n", err)
+		log.Fatalf("Failed to dial the identity service: %v\n", err)
 	}
 	accountConn, err := grpc.Dial(accountSvcHost+":"+accountSvcPort, grpc.WithInsecure(), grpc.WithUnaryInterceptor(authIntr.Unary()))
 	if err != nil {
-		log.Fatalf("Err: %v\n", err)
+		log.Fatalf("Failed to dial the account service: %v\n", err)
 	}
 
 	identitySvcClient := identitypb.NewIdentityServiceClient(identityConn)

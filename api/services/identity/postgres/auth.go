@@ -15,10 +15,11 @@ import (
 )
 
 // verify interface compliance
-var _ auth.Repository = (*repo)(nil)
+var _ auth.Repository = (*Repository)(nil)
 
-func (r *repo) CheckUsersPassword(accountID uuid.UUID, email, plainPassword string) (bool, error) {
-	hash, err := r.q.FindUsersPassword(context.Background(), gen.FindUsersPasswordParams{
+// CheckUsersPassword .
+func (r *Repository) CheckUsersPassword(ctx context.Context, accountID uuid.UUID, email, plainPassword string) (bool, error) {
+	hash, err := r.q.FindUsersPassword(ctx, gen.FindUsersPasswordParams{
 		AccountID: accountID, Email: email,
 	})
 	if errors.Is(err, sql.ErrNoRows) {
@@ -34,13 +35,14 @@ func (r *repo) CheckUsersPassword(accountID uuid.UUID, email, plainPassword stri
 	return err == nil, nil
 }
 
-func (r *repo) UpdateUsersPassword(accountID uuid.UUID, email, plainPassword string) error {
+// UpdateUsersPassword .
+func (r *Repository) UpdateUsersPassword(ctx context.Context, accountID uuid.UUID, email, plainPassword string) error {
 	// Hash the password
 	hash, err := bcrypt.GenerateFromPassword([]byte(plainPassword), 10)
 	if err != nil {
 		return err
 	}
-	err = r.q.UpdateUsersPassword(context.Background(), gen.UpdateUsersPasswordParams{
+	err = r.q.UpdateUsersPassword(ctx, gen.UpdateUsersPasswordParams{
 		AccountID: accountID,
 		Email:     email,
 		Password:  sql.NullString{String: string(hash), Valid: true},
@@ -51,8 +53,9 @@ func (r *repo) UpdateUsersPassword(accountID uuid.UUID, email, plainPassword str
 	return nil
 }
 
-func (r *repo) CheckAdminsPassword(email, plainPassword string) (bool, error) {
-	hash, err := r.q.FindAdminsPassword(context.Background(), email)
+// CheckAdminsPassword .
+func (r *Repository) CheckAdminsPassword(ctx context.Context, email, plainPassword string) (bool, error) {
+	hash, err := r.q.FindAdminsPassword(ctx, email)
 	if errors.Is(err, sql.ErrNoRows) {
 		return false, fmt.Errorf("admin %w", domain.ErrNotFound)
 	}
@@ -66,13 +69,14 @@ func (r *repo) CheckAdminsPassword(email, plainPassword string) (bool, error) {
 	return err == nil, nil
 }
 
-func (r *repo) UpdateAdminsPassword(email, plainPassword string) error {
+// UpdateAdminsPassword .
+func (r *Repository) UpdateAdminsPassword(ctx context.Context, email, plainPassword string) error {
 	// Hash the password
 	hash, err := bcrypt.GenerateFromPassword([]byte(plainPassword), 10)
 	if err != nil {
 		return err
 	}
-	err = r.q.UpdateAdminsPassword(context.Background(), gen.UpdateAdminsPasswordParams{
+	err = r.q.UpdateAdminsPassword(ctx, gen.UpdateAdminsPasswordParams{
 		Email:    email,
 		Password: sql.NullString{String: string(hash), Valid: true},
 	})
@@ -82,8 +86,9 @@ func (r *repo) UpdateAdminsPassword(email, plainPassword string) error {
 	return nil
 }
 
-func (r *repo) FindUserInfoByEmail(accountID uuid.UUID, email string) (*auth.UserInfo, error) {
-	info, err := r.q.FindUserInfoByEmail(context.Background(), gen.FindUserInfoByEmailParams{
+// FindUserInfoByEmail .
+func (r *Repository) FindUserInfoByEmail(ctx context.Context, accountID uuid.UUID, email string) (*auth.UserInfo, error) {
+	info, err := r.q.FindUserInfoByEmail(ctx, gen.FindUserInfoByEmailParams{
 		AccountID: accountID,
 		Email:     email,
 	})
@@ -96,8 +101,9 @@ func (r *repo) FindUserInfoByEmail(accountID uuid.UUID, email string) (*auth.Use
 	return &info, nil
 }
 
-func (r *repo) FindAdminInfoByEmail(email string) (*auth.AdminInfo, error) {
-	info, err := r.q.FindAdminInfoByEmail(context.Background(), email)
+// FindAdminInfoByEmail .
+func (r *Repository) FindAdminInfoByEmail(ctx context.Context, email string) (*auth.AdminInfo, error) {
+	info, err := r.q.FindAdminInfoByEmail(ctx, email)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, fmt.Errorf("admin %w", domain.ErrNotFound)
 	}

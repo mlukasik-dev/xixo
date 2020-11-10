@@ -18,29 +18,18 @@ func AccountToPb(acc *accounts.Account) *accountpb.Account {
 	}
 }
 
+// PbToAccount .
+func PbToAccount(acc *accountpb.Account) *accounts.Account {
+	return &accounts.Account{}
+}
+
 // AccountsToPb .
-func AccountsToPb(slice []*accounts.Account) []*accountpb.Account {
+func AccountsToPb(slice []accounts.Account) []*accountpb.Account {
 	var marshaled []*accountpb.Account
 	for _, account := range slice {
-		marshaled = append(marshaled, AccountToPb(account))
+		marshaled = append(marshaled, AccountToPb(&account))
 	}
 	return marshaled
-}
-
-// PbToCreateAccountInput transforms accountpb.Account to CreateAccountInput entity
-// in case of invalid resource name return an error and nil
-func PbToCreateAccountInput(pb *accountpb.Account) *accounts.CreateAccountInput {
-	return &accounts.CreateAccountInput{
-		DisplayName: pb.DisplayName,
-	}
-}
-
-// PbToUpdateAccountInput transforms accountpb.Account to UpdateAccountInput entity
-// in case of invalid resource name return an error and nil
-func PbToUpdateAccountInput(pb *accountpb.Account) *accounts.UpdateAccountInput {
-	return &accounts.UpdateAccountInput{
-		DisplayName: pb.DisplayName,
-	}
 }
 
 // PbToUpdateMask .

@@ -1,6 +1,8 @@
 package admins
 
 import (
+	"context"
+
 	"go.xixo.com/api/pkg/cursor"
 
 	"github.com/google/uuid"
@@ -14,12 +16,12 @@ type UpdateMask struct {
 	Roles     bool
 }
 
-// Repository Admin's repository
+// Repository Admin's repository.
 type Repository interface {
-	FindAdmins(cursor *cursor.Cursor, limit int32) ([]*Admin, error)
-	FindAdminByID(adminID uuid.UUID) (*Admin, error)
-	CreateAdmin(input *Admin) (*Admin, error)
-	UpdateAdmin(adminID uuid.UUID, mask *UpdateMask, input *Admin) (*Admin, error)
-	DeleteAdmin(adminID uuid.UUID) error
-	CountAdmins() (int32, error)
+	FindAdmins(ctx context.Context, cursor *cursor.Cursor, limit int32) ([]Admin, error)
+	FindAdminByID(ctx context.Context, adminID uuid.UUID) (*Admin, error)
+	CreateAdmin(ctx context.Context, input *Admin) (*Admin, error)
+	UpdateAdmin(ctx context.Context, adminID uuid.UUID, mask *UpdateMask, input *Admin) (*Admin, error)
+	DeleteAdmin(ctx context.Context, adminID uuid.UUID) error
+	CountAdmins(ctx context.Context) (int32, error)
 }

@@ -1,34 +1,42 @@
 package postgres
 
 import (
+	"context"
+
 	"github.com/google/uuid"
 	"go.xixo.com/api/pkg/cursor"
 	"go.xixo.com/api/services/identity/domain/roles"
 )
 
 // verify interface compliance
-var _ roles.Repository = (*repo)(nil)
+var _ roles.Repository = (*Repository)(nil)
 
-func (r *repo) FindRoles(cursor *cursor.Cursor, limit int32, filter *roles.Filter) ([]*roles.Role, error) {
+// FindRoles .
+func (r *Repository) FindRoles(ctx context.Context, cursor *cursor.Cursor, limit int32, filter *roles.Filter) ([]roles.Role, error) {
 	panic("not implemented") // TODO: Implement
 }
 
-func (r *repo) FindRoleByID(roleID uuid.UUID) (*roles.Role, error) {
+// FindRoleByID .
+func (r *Repository) FindRoleByID(ctx context.Context, roleID uuid.UUID) (*roles.Role, error) {
 	panic("not implemented") // TODO: Implement
 }
 
-func (r *repo) CreateRole(input *roles.CreateRoleInput) (*roles.Role, error) {
+// CreateRole ..
+func (r *Repository) CreateRole(ctx context.Context, input *roles.Role) (*roles.Role, error) {
 	panic("not implemented") // TODO: Implement
 }
 
-func (r *repo) UpdateRole(roleID uuid.UUID, mask *roles.UpdateMask, input *roles.UpdateRoleInput) (*roles.Role, error) {
+// UpdateRole .
+func (r *Repository) UpdateRole(ctx context.Context, roleID uuid.UUID, mask *roles.UpdateMask, input *roles.Role) (*roles.Role, error) {
 	panic("not implemented") // TODO: Implement
 }
 
-func (r *repo) DeleteRole(roleID uuid.UUID) error {
+// DeleteRole .
+func (r *Repository) DeleteRole(ctx context.Context, roleID uuid.UUID) error {
 	panic("not implemented") // TODO: Implement
 }
 
-func (r *repo) CountRoles() (int32, error) {
+// CountRoles .
+func (r *Repository) CountRoles(ctx context.Context) (int32, error) {
 	panic("not implemented") // TODO: Implement
 }

@@ -64,21 +64,11 @@ SELECT admin_id, first_name, last_name, email, created_at, updated_at, roles
   FROM admins_with_roles WHERE admin_id = $1
 `
 
-type FindAdminByIDRow struct {
-	AdminID   uuid.UUID
-	FirstName string
-	LastName  string
-	Email     string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Roles     []string
-}
-
-func (q *Queries) FindAdminByID(ctx context.Context, adminID uuid.UUID) (FindAdminByIDRow, error) {
+func (q *Queries) FindAdminByID(ctx context.Context, adminID uuid.UUID) (admins.Admin, error) {
 	row := q.db.QueryRowContext(ctx, findAdminByID, adminID)
-	var i FindAdminByIDRow
+	var i admins.Admin
 	err := row.Scan(
-		&i.AdminID,
+		&i.ID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
@@ -106,27 +96,17 @@ SELECT admin_id, first_name, last_name, email, created_at, updated_at, roles
     ORDER BY created_at DESC, admin_id DESC LIMIT $1
 `
 
-type FindAdminsRow struct {
-	AdminID   uuid.UUID
-	FirstName string
-	LastName  string
-	Email     string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Roles     []string
-}
-
-func (q *Queries) FindAdmins(ctx context.Context, limit int32) ([]FindAdminsRow, error) {
+func (q *Queries) FindAdmins(ctx context.Context, limit int32) ([]admins.Admin, error) {
 	rows, err := q.db.QueryContext(ctx, findAdmins, limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FindAdminsRow
+	var items []admins.Admin
 	for rows.Next() {
-		var i FindAdminsRow
+		var i admins.Admin
 		if err := rows.Scan(
-			&i.AdminID,
+			&i.ID,
 			&i.FirstName,
 			&i.LastName,
 			&i.Email,
@@ -162,27 +142,17 @@ type FindAdminsCursorParams struct {
 	Limit     int32
 }
 
-type FindAdminsCursorRow struct {
-	AdminID   uuid.UUID
-	FirstName string
-	LastName  string
-	Email     string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Roles     []string
-}
-
-func (q *Queries) FindAdminsCursor(ctx context.Context, arg FindAdminsCursorParams) ([]FindAdminsCursorRow, error) {
+func (q *Queries) FindAdminsCursor(ctx context.Context, arg FindAdminsCursorParams) ([]admins.Admin, error) {
 	rows, err := q.db.QueryContext(ctx, findAdminsCursor, arg.CreatedAt, arg.AdminID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FindAdminsCursorRow
+	var items []admins.Admin
 	for rows.Next() {
-		var i FindAdminsCursorRow
+		var i admins.Admin
 		if err := rows.Scan(
-			&i.AdminID,
+			&i.ID,
 			&i.FirstName,
 			&i.LastName,
 			&i.Email,

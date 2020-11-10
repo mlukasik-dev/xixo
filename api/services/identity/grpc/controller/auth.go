@@ -22,10 +22,10 @@ func (c *ctr) Login(ctx context.Context, req *identitypb.LoginRequest) (*identit
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "invalid uuid")
 		}
-		token, err = c.authSvc.LoginUser(accountID, req.Email, req.Password)
+		token, err = c.authSvc.LoginUser(ctx, accountID, req.Email, req.Password)
 	} else {
 		// Authenticate as admin
-		token, err = c.authSvc.LoginAdmin(req.Email, req.Password)
+		token, err = c.authSvc.LoginAdmin(ctx, req.Email, req.Password)
 	}
 	if errors.Is(err, domain.ErrNotFound) {
 		return nil, status.Errorf(codes.PermissionDenied, "no user with such email")
@@ -51,10 +51,10 @@ func (c *ctr) Register(ctx context.Context, req *identitypb.RegisterRequest) (*i
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "invalid uuid")
 		}
-		token, err = c.authSvc.RegisterUser(accountID, req.Email, req.Password)
+		token, err = c.authSvc.RegisterUser(ctx, accountID, req.Email, req.Password)
 	} else {
 		// Register as admin
-		token, err = c.authSvc.RegisterAdmin(req.Email, req.Password)
+		token, err = c.authSvc.RegisterAdmin(ctx, req.Email, req.Password)
 	}
 	if errors.Is(err, domain.ErrNotFound) {
 		return nil, status.Errorf(codes.PermissionDenied, "user with such email was not found")

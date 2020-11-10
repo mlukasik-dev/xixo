@@ -10,18 +10,18 @@ import (
 
 type ctr struct {
 	*identitypb.UnimplementedIdentityServiceServer
-	authSvc   auth.Service
-	adminsSvc admins.Service
-	usersSvc  users.Service
-	rolesSvc  roles.Service
+	authSvc   *auth.Service
+	adminsSvc *admins.Service
+	usersSvc  *users.Service
+	rolesSvc  *roles.Service
 }
 
 // Services .
 type Services struct {
-	AuthSvc   auth.Service
-	AdminsSvc admins.Service
-	UsersSvc  users.Service
-	RolesSvc  roles.Service
+	AuthSvc   *auth.Service
+	AdminsSvc *admins.Service
+	UsersSvc  *users.Service
+	RolesSvc  *roles.Service
 }
 
 // New returns initialized gRPC controller

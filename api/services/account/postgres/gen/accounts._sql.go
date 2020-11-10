@@ -11,12 +11,12 @@ import (
 	"go.xixo.com/api/services/account/domain/accounts"
 )
 
-const count = `-- name: Count :one
+const countAccounts = `-- name: CountAccounts :one
 SELECT COUNT(*) FROM accounts
 `
 
-func (q *Queries) Count(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, count)
+func (q *Queries) CountAccounts(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countAccounts)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -151,7 +151,7 @@ WHERE account_id = $3
 
 type UpdateAccountParams struct {
 	DisplayName             string
-	ShouldUpdateDisplayName string
+	ShouldUpdateDisplayName bool
 	AccountID               uuid.UUID
 }
 

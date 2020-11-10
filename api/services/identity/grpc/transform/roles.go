@@ -31,42 +31,17 @@ func RoleToPb(role *roles.Role) *identitypb.Role {
 
 // RolesToPb takes slice of Role domain entities
 // and transforms them to the slice of gRPC Role messages
-func RolesToPb(slice []*roles.Role) []*identitypb.Role {
+func RolesToPb(slice []roles.Role) []*identitypb.Role {
 	var marshaled []*identitypb.Role
 	for _, role := range slice {
-		marshaled = append(marshaled, RoleToPb(role))
+		marshaled = append(marshaled, RoleToPb(&role))
 	}
 	return marshaled
 }
 
-// PbToCreateRoleInput .
-func PbToCreateRoleInput(pb *identitypb.Role) *roles.CreateRoleInput {
-	r := &roles.CreateRoleInput{
-		AdminOnly:   pb.AdminOnly,
-		DisplayName: pb.DisplayName,
-		Description: pb.Description,
-	}
-	var permissions []string
-	for _, p := range pb.Permissions {
-		permissions = append(permissions, p.Method)
-	}
-	r.Permissions = permissions
-	return r
-}
-
-// PbToUpdateRoleInput .
-func PbToUpdateRoleInput(pb *identitypb.Role) *roles.UpdateRoleInput {
-	r := &roles.UpdateRoleInput{
-		AdminOnly:   pb.AdminOnly,
-		DisplayName: pb.DisplayName,
-		Description: pb.Description,
-	}
-	var permissions []string
-	for _, p := range pb.Permissions {
-		permissions = append(permissions, p.Method)
-	}
-	r.Permissions = permissions
-	return r
+// PbToRole .
+func PbToRole(pb *identitypb.Role) *roles.Role {
+	return nil
 }
 
 // PbToRoleUpdateMask .

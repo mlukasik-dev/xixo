@@ -14,7 +14,7 @@ import (
 )
 
 func (c *ctr) ListUsers(ctx context.Context, req *identitypb.ListUsersRequest) (*identitypb.ListUsersResponse, error) {
-	users, nextPageToken, err := c.usersSvc.ListUsers(req.Parent, req.PageToken, req.PageSize)
+	users, nextPageToken, err := c.usersSvc.ListUsers(ctx, req.Parent, req.PageToken, req.PageSize)
 	if errors.Is(err, domain.ErrInvalidPageToken) {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
@@ -29,7 +29,7 @@ func (c *ctr) ListUsers(ctx context.Context, req *identitypb.ListUsersRequest) (
 }
 
 func (c *ctr) GetUsersCount(ctx context.Context, req *identitypb.GetUsersCountRequest) (*identitypb.GetUsersCountResponse, error) {
-	count, err := c.usersSvc.Count(req.Parent)
+	count, err := c.usersSvc.Count(ctx, req.Parent)
 	if err != nil {
 		return nil, err
 	}
@@ -39,19 +39,18 @@ func (c *ctr) GetUsersCount(ctx context.Context, req *identitypb.GetUsersCountRe
 }
 
 func (c *ctr) GetUser(ctx context.Context, req *identitypb.GetUserRequest) (*identitypb.User, error) {
-	user, err := c.usersSvc.GetUser(req.Name)
+	user, err := c.usersSvc.GetUser(ctx, req.Name)
 	if errors.Is(err, domain.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	}
 	if err != nil {
 		return nil, err
 	}
-
 	return transform.UserToPb(user), nil
 }
 
 func (c *ctr) CreateUser(ctx context.Context, req *identitypb.CreateUserRequest) (*identitypb.User, error) {
-	user, err := c.usersSvc.CreateUser(req.Parent, transform.PbToCreateUserInput(req.User), req.InitialUser)
+	user, err := c.usersSvc.CreateUser(ctx, req.Parent, transform.PbToUser(req.User), req.InitialUser)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +63,7 @@ func (c *ctr) UpdateUser(ctx context.Context, req *identitypb.UpdateUserRequest)
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 	user, err := c.usersSvc.UpdateUser(
-		req.User.Name, mask, transform.PbToUpdateUserInput(req.User),
+		ctx, req.User.Name, mask, transform.PbToUser(req.User),
 	)
 	if errors.Is(err, domain.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
@@ -72,18 +71,16 @@ func (c *ctr) UpdateUser(ctx context.Context, req *identitypb.UpdateUserRequest)
 	if err != nil {
 		return nil, err
 	}
-
 	return transform.UserToPb(user), nil
 }
 
 func (c *ctr) DeleteUser(ctx context.Context, req *identitypb.DeleteUserRequest) (*empty.Empty, error) {
-	err := c.usersSvc.DeleteUser(req.Name)
+	err := c.usersSvc.DeleteUser(ctx, req.Name)
 	if errors.Is(err, domain.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	}
 	if err != nil {
 		return nil, err
 	}
-
 	return &empty.Empty{}, nil
 }

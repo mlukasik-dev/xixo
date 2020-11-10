@@ -69,10 +69,19 @@ func init() {
 	}
 }
 
-func parse() (Config, error) {
+func parse() (conf Config, err error) {
 	p, err := strconv.Atoi(os.Getenv("PORT"))
+	if err != nil {
+		return conf, fmt.Errorf("failed to parse PORT env variable")
+	}
 	dbp, err := strconv.Atoi(os.Getenv("DB_PORT"))
+	if err != nil {
+		return conf, fmt.Errorf("failed to parse DB_PORT env variable")
+	}
 	mins, err := strconv.Atoi(os.Getenv("AUTH_TOKEN_DURATION_MINUTES"))
+	if err != nil {
+		return conf, fmt.Errorf("failed to parse AUTH_TOKEN_DURATION_MINUTES env variable")
+	}
 	return Config{
 		Port: port(p),
 		Postgres: Postgres{

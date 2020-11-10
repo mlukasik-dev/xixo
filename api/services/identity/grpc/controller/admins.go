@@ -14,7 +14,7 @@ import (
 )
 
 func (c *ctr) ListAdmins(ctx context.Context, req *identitypb.ListAdminsRequest) (*identitypb.ListAdminsResponse, error) {
-	admins, nextPageToken, err := c.adminsSvc.ListAdmins(req.PageToken, req.PageSize)
+	admins, nextPageToken, err := c.adminsSvc.ListAdmins(ctx, req.PageToken, req.PageSize)
 	if errors.Is(err, domain.ErrInvalidPageToken) {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
@@ -29,7 +29,7 @@ func (c *ctr) ListAdmins(ctx context.Context, req *identitypb.ListAdminsRequest)
 }
 
 func (c *ctr) GetAdminsCount(ctx context.Context, req *identitypb.GetAdminsCountRequest) (*identitypb.GetAdminsCountResponse, error) {
-	count, err := c.adminsSvc.Count()
+	count, err := c.adminsSvc.Count(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (c *ctr) GetAdminsCount(ctx context.Context, req *identitypb.GetAdminsCount
 }
 
 func (c *ctr) GetAdmin(ctx context.Context, req *identitypb.GetAdminRequest) (*identitypb.Admin, error) {
-	user, err := c.adminsSvc.GetAdmin(req.Name)
+	user, err := c.adminsSvc.GetAdmin(ctx, req.Name)
 	if errors.Is(err, domain.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	}
@@ -50,7 +50,7 @@ func (c *ctr) GetAdmin(ctx context.Context, req *identitypb.GetAdminRequest) (*i
 }
 
 func (c *ctr) CreateAdmin(ctx context.Context, req *identitypb.CreateAdminRequest) (*identitypb.Admin, error) {
-	user, err := c.adminsSvc.CreateAdmin(transform.PbToAdmin(req.Admin))
+	user, err := c.adminsSvc.CreateAdmin(ctx, transform.PbToAdmin(req.Admin))
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *ctr) UpdateAdmin(ctx context.Context, req *identitypb.UpdateAdminReques
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 	user, err := c.adminsSvc.UpdateAdmin(
-		req.Admin.Name, mask, transform.PbToAdmin(req.Admin),
+		ctx, req.Admin.Name, mask, transform.PbToAdmin(req.Admin),
 	)
 	if errors.Is(err, domain.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
@@ -75,7 +75,7 @@ func (c *ctr) UpdateAdmin(ctx context.Context, req *identitypb.UpdateAdminReques
 }
 
 func (c *ctr) DeleteAdmin(ctx context.Context, req *identitypb.DeleteAdminRequest) (*empty.Empty, error) {
-	err := c.adminsSvc.DeleteAdmin(req.Name)
+	err := c.adminsSvc.DeleteAdmin(ctx, req.Name)
 	if errors.Is(err, domain.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	}

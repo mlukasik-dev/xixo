@@ -8,12 +8,12 @@ import (
 
 type ctr struct {
 	*accountpb.UnimplementedAccountServiceServer
-	accountsSvc       accounts.Service
+	accountsSvc       *accounts.Service
 	identitySvcClient identitypb.IdentityServiceClient
 }
 
 // New creates new account's gRPC controller
-func New(accountsSvc accounts.Service, usersClient identitypb.IdentityServiceClient) accountpb.AccountServiceServer {
+func New(accountsSvc *accounts.Service, usersClient identitypb.IdentityServiceClient) accountpb.AccountServiceServer {
 	return &ctr{
 		&accountpb.UnimplementedAccountServiceServer{},
 		accountsSvc, usersClient,

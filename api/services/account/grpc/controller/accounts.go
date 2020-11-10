@@ -15,7 +15,7 @@ import (
 )
 
 func (c *ctr) ListAccounts(ctx context.Context, req *accountpb.ListAccountsRequest) (*accountpb.ListAccountsResponse, error) {
-	accs, next, err := c.accountsSvc.ListAccounts(req.PageToken, req.PageSize)
+	accs, next, err := c.accountsSvc.ListAccounts(ctx, req.PageToken, req.PageSize)
 	if errors.Is(err, accounts.ErrPageSizeOurOfBoundaries) || errors.Is(err, accounts.ErrInvalidPageToken) {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
@@ -30,7 +30,7 @@ func (c *ctr) ListAccounts(ctx context.Context, req *accountpb.ListAccountsReque
 }
 
 func (c *ctr) GetAccountsCount(ctx context.Context, req *accountpb.GetAccountsCountRequest) (*accountpb.GetAccountsCountResponse, error) {
-	count, err := c.accountsSvc.Count()
+	count, err := c.accountsSvc.CountAccounts(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (c *ctr) GetAccountsCount(ctx context.Context, req *accountpb.GetAccountsCo
 }
 
 func (c *ctr) GetAccount(ctx context.Context, req *accountpb.GetAccountRequest) (*accountpb.Account, error) {
-	account, err := c.accountsSvc.GetAccount(req.Name)
+	account, err := c.accountsSvc.GetAccount(ctx, req.Name)
 	if errors.Is(err, accounts.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	}
@@ -49,7 +49,7 @@ func (c *ctr) GetAccount(ctx context.Context, req *accountpb.GetAccountRequest) 
 }
 
 func (c *ctr) CreateAccount(ctx context.Context, req *accountpb.CreateAccountRequest) (*accountpb.Account, error) {
-	account, err := c.accountsSvc.CreateAccount(transform.PbToCreateAccountInput(req.Account))
+	account, err := c.accountsSvc.CreateAccount(ctx, transform.PbToAccount(req.Account))
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (c *ctr) UpdateAccount(ctx context.Context, req *accountpb.UpdateAccountReq
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 	account, err := c.accountsSvc.UpdateAccount(
-		req.Account.Name, mask, transform.PbToUpdateAccountInput(req.Account),
+		ctx, req.Account.Name, mask, transform.PbToAccount(req.Account),
 	)
 	if errors.Is(err, accounts.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
@@ -88,7 +88,7 @@ func (c *ctr) UpdateAccount(ctx context.Context, req *accountpb.UpdateAccountReq
 }
 
 func (c *ctr) DeleteAccount(ctx context.Context, req *accountpb.DeleteAccountRequest) (*empty.Empty, error) {
-	err := c.accountsSvc.DeleteAccount(req.Name)
+	err := c.accountsSvc.DeleteAccount(ctx, req.Name)
 	if errors.Is(err, accounts.ErrNotFound) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	}

@@ -23,10 +23,10 @@ func AdminToPb(a *admins.Admin) *identitypb.Admin {
 }
 
 // AdminsToPb .
-func AdminsToPb(slice []*admins.Admin) []*identitypb.Admin {
+func AdminsToPb(slice []admins.Admin) []*identitypb.Admin {
 	var marshaled []*identitypb.Admin
 	for _, user := range slice {
-		marshaled = append(marshaled, AdminToPb(user))
+		marshaled = append(marshaled, AdminToPb(&user))
 	}
 	return marshaled
 }

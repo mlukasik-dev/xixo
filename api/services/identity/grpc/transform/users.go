@@ -1,7 +1,6 @@
 package transform
 
 import (
-	"go.xixo.com/api/services/identity/domain/roles"
 	"go.xixo.com/api/services/identity/domain/users"
 	"go.xixo.com/protobuf/identitypb"
 
@@ -25,48 +24,17 @@ func UserToPb(u *users.User) *identitypb.User {
 }
 
 // UsersToPb .
-func UsersToPb(slice []*users.User) []*identitypb.User {
+func UsersToPb(slice []users.User) []*identitypb.User {
 	var marshaled []*identitypb.User
 	for _, user := range slice {
-		marshaled = append(marshaled, UserToPb(user))
+		marshaled = append(marshaled, UserToPb(&user))
 	}
 	return marshaled
 }
 
-// PbToCreateUserInput .
-func PbToCreateUserInput(i *identitypb.User) *users.CreateUserInput {
-	input := &users.CreateUserInput{
-		FirstName:   i.FirstName,
-		LastName:    i.LastName,
-		Email:       i.Email,
-		PhoneNumber: i.PhoneNumber,
-	}
-	var roleIDs []string
-	for _, n := range i.RoleNames {
-		// TODO: handle error
-		name, _ := roles.ParseResourceName(n)
-		roleIDs = append(roleIDs, name.RoleID.String())
-	}
-	input.Roles = roleIDs
-	return input
-}
-
-// PbToUpdateUserInput .
-func PbToUpdateUserInput(i *identitypb.User) *users.UpdateUserInput {
-	input := &users.UpdateUserInput{
-		FirstName:   i.FirstName,
-		LastName:    i.LastName,
-		Email:       i.Email,
-		PhoneNumber: i.PhoneNumber,
-	}
-	var roleIDs []string
-	for _, n := range i.RoleNames {
-		// TODO: handle error
-		name, _ := roles.ParseResourceName(n)
-		roleIDs = append(roleIDs, name.RoleID.String())
-	}
-	input.Roles = roleIDs
-	return input
+// PbToUser .
+func PbToUser(pb *identitypb.User) *users.User {
+	return nil
 }
 
 // PbToUserUpdateMask .

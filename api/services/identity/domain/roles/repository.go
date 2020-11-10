@@ -1,13 +1,13 @@
 package roles
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"net/url"
 
 	"go.xixo.com/api/pkg/cursor"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
@@ -56,36 +56,10 @@ func NewFilter(query string) (*Filter, error) {
 
 // Repository .
 type Repository interface {
-	FindRoles(cursor *cursor.Cursor, limit int32, filter *Filter) ([]*Role, error)
-	FindRoleByID(roleID uuid.UUID) (*Role, error)
-	CreateRole(input *CreateRoleInput) (*Role, error)
-	UpdateRole(roleID uuid.UUID, mask *UpdateMask, input *UpdateRoleInput) (*Role, error)
-	DeleteRole(roleID uuid.UUID) error
-	CountRoles() (int32, error)
-}
-
-// CreateRoleInput .
-type CreateRoleInput struct {
-	AdminOnly   bool
-	DisplayName string
-	Description string
-	Permissions []string
-}
-
-// Validate .
-func (i *CreateRoleInput) Validate(v *validator.Validate) error {
-	return v.Struct(i)
-}
-
-// UpdateRoleInput .
-type UpdateRoleInput struct {
-	AdminOnly   bool
-	DisplayName string
-	Description string
-	Permissions []string
-}
-
-// Validate .
-func (i *UpdateRoleInput) Validate(v *validator.Validate) error {
-	return v.Struct(i)
+	FindRoles(ctx context.Context, cursor *cursor.Cursor, limit int32, filter *Filter) ([]Role, error)
+	FindRoleByID(ctx context.Context, roleID uuid.UUID) (*Role, error)
+	CreateRole(ctx context.Context, input *Role) (*Role, error)
+	UpdateRole(ctx context.Context, roleID uuid.UUID, mask *UpdateMask, input *Role) (*Role, error)
+	DeleteRole(ctx context.Context, roleID uuid.UUID) error
+	CountRoles(ctx context.Context) (int32, error)
 }

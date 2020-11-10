@@ -1,15 +1,19 @@
 package auth
 
-import "github.com/google/uuid"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 // Repository .
 type Repository interface {
-	CheckUsersPassword(accountID uuid.UUID, email string, plainPassword string) (bool, error)
-	UpdateUsersPassword(accountID uuid.UUID, email string, plainPassword string) error
-	CheckAdminsPassword(email string, plainPassword string) (bool, error)
-	UpdateAdminsPassword(email string, plainPassword string) error
-	FindAdminInfoByEmail(email string) (*AdminInfo, error)
-	FindUserInfoByEmail(accountID uuid.UUID, email string) (*UserInfo, error)
+	CheckUsersPassword(ctx context.Context, accountID uuid.UUID, email string, plainPassword string) (bool, error)
+	UpdateUsersPassword(ctx context.Context, accountID uuid.UUID, email string, plainPassword string) error
+	CheckAdminsPassword(ctx context.Context, email string, plainPassword string) (bool, error)
+	UpdateAdminsPassword(ctx context.Context, email string, plainPassword string) error
+	FindAdminInfoByEmail(ctx context.Context, email string) (*AdminInfo, error)
+	FindUserInfoByEmail(ctx context.Context, accountID uuid.UUID, email string) (*UserInfo, error)
 }
 
 // AdminInfo .

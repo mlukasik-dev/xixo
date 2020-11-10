@@ -10,13 +10,13 @@ import (
 	"github.com/google/uuid"
 )
 
-// Cursor .
+// Cursor helps identify resource by its timestamp and UUID.
 type Cursor struct {
 	Timestamp time.Time
 	UUID      uuid.UUID
 }
 
-// Decode .
+// Decode decodes information from Cursor.
 func Decode(encodedCursor string) (*Cursor, error) {
 	byt, err := base64.StdEncoding.DecodeString(encodedCursor)
 	if err != nil {
@@ -43,7 +43,7 @@ func Decode(encodedCursor string) (*Cursor, error) {
 	}, nil
 }
 
-// Encode .
+// Encode encodes information into cursor.
 func Encode(c *Cursor) string {
 	key := fmt.Sprintf("%s#%s", c.Timestamp.Format(time.RFC3339Nano), c.UUID.String())
 	return base64.StdEncoding.EncodeToString([]byte(key))

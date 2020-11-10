@@ -1,15 +1,30 @@
 package roles
 
 import (
+	"context"
 	"fmt"
 
 	"go.xixo.com/api/pkg/cursor"
 	"go.xixo.com/api/services/identity/domain"
+
+	"github.com/go-playground/validator/v10"
 )
+
+// Service role's service.
+type Service struct {
+	repo     Repository
+	validate *validator.Validate
+}
+
+// New returns initialized role's service.
+func New(r Repository, v *validator.Validate) *Service {
+	return &Service{r, v}
+}
 
 const maxPageSize = 1000
 
-func (s *svc) ListRoles(pageToken string, pageSize int32, query string) (roles []*Role, nextPageToken string, err error) {
+// ListRoles .
+func (s *Service) ListRoles(ctx context.Context, pageToken string, pageSize int32, query string) (roles []Role, nextPageToken string, err error) {
 	if pageSize < 1 || pageSize > maxPageSize {
 		return nil, "", domain.ErrPageSizeOurOfBoundaries
 	}
@@ -26,7 +41,7 @@ func (s *svc) ListRoles(pageToken string, pageSize int32, query string) (roles [
 	if err != nil {
 		return nil, "", err
 	}
-	roles, err = s.repo.FindRoles(c, pageSize, filter)
+	roles, err = s.repo.FindRoles(ctx, c, pageSize, filter)
 	if err != nil {
 		return nil, "", err
 	}
@@ -42,52 +57,57 @@ func (s *svc) ListRoles(pageToken string, pageSize int32, query string) (roles [
 	return roles, nextPageToken, nil
 }
 
-func (s *svc) Count() (int32, error) {
-	count, err := s.repo.CountRoles()
+// Count .
+func (s *Service) Count(ctx context.Context) (int32, error) {
+	count, err := s.repo.CountRoles(ctx)
 	if err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
-func (s *svc) GetRole(n string) (*Role, error) {
+// GetRole .
+func (s *Service) GetRole(ctx context.Context, n string) (*Role, error) {
 	name, err := ParseResourceName(n)
 	if err != nil {
 		return nil, err
 	}
-	role, err := s.repo.FindRoleByID(name.RoleID)
+	role, err := s.repo.FindRoleByID(ctx, name.RoleID)
 	if err != nil {
 		return nil, err
 	}
 	return role, nil
 }
 
-func (s *svc) CreateRole(input *CreateRoleInput) (*Role, error) {
-	role, err := s.repo.CreateRole(input)
+// CreateRole .
+func (s *Service) CreateRole(ctx context.Context, input *Role) (*Role, error) {
+	role, err := s.repo.CreateRole(ctx, input)
 	if err != nil {
 		return nil, err
 	}
 	return role, nil
 }
 
-func (s *svc) UpdateRole(n string, mask *UpdateMask, input *UpdateRoleInput) (*Role, error) {
+// UpdateRole .
+func (s *Service) UpdateRole(ctx context.Context, n string, mask *UpdateMask, input *Role) (*Role, error) {
 	name, err := ParseResourceName(n)
 	if err != nil {
 		return nil, err
 	}
-	role, err := s.repo.UpdateRole(name.RoleID, mask, input)
+	role, err := s.repo.UpdateRole(ctx, name.RoleID, mask, input)
 	if err != nil {
 		return nil, err
 	}
 	return role, nil
 }
 
-func (s *svc) DeleteRole(n string) error {
+// DeleteRole .
+func (s *Service) DeleteRole(ctx context.Context, n string) error {
 	name, err := ParseResourceName(n)
 	if err != nil {
 		return err
 	}
-	err = s.repo.DeleteRole(name.RoleID)
+	err = s.repo.DeleteRole(ctx, name.RoleID)
 	if err != nil {
 		return err
 	}

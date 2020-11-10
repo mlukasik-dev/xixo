@@ -1,13 +1,29 @@
 package admins
 
 import (
+	"context"
+
 	"go.xixo.com/api/pkg/cursor"
 	"go.xixo.com/api/services/identity/domain"
+
+	"github.com/go-playground/validator/v10"
 )
 
 const maxPageSize = 1000
 
-func (s *svc) ListAdmins(pageToken string, pageSize int32) (admins []*Admin, nextPageToken string, err error) {
+// Service admin's service.
+type Service struct {
+	repo     Repository
+	validate *validator.Validate
+}
+
+// New returns initialized admin's service.
+func New(r Repository, v *validator.Validate) *Service {
+	return &Service{r, v}
+}
+
+// ListAdmins .
+func (s *Service) ListAdmins(ctx context.Context, pageToken string, pageSize int32) (admins []Admin, nextPageToken string, err error) {
 	if pageSize < 1 || pageSize > maxPageSize {
 		return nil, "", domain.ErrPageSizeOurOfBoundaries
 	}
@@ -19,7 +35,7 @@ func (s *svc) ListAdmins(pageToken string, pageSize int32) (admins []*Admin, nex
 			return nil, "", domain.ErrInvalidPageToken
 		}
 	}
-	admins, err = s.repo.FindAdmins(c, pageSize)
+	admins, err = s.repo.FindAdmins(ctx, c, pageSize)
 	if err != nil {
 		return nil, "", err
 	}
@@ -35,52 +51,57 @@ func (s *svc) ListAdmins(pageToken string, pageSize int32) (admins []*Admin, nex
 	return admins, nextPageToken, nil
 }
 
-func (s *svc) Count() (int32, error) {
-	count, err := s.repo.CountAdmins()
+// Count .
+func (s *Service) Count(ctx context.Context) (int32, error) {
+	count, err := s.repo.CountAdmins(ctx)
 	if err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
-func (s *svc) GetAdmin(n string) (*Admin, error) {
+// GetAdmin .
+func (s *Service) GetAdmin(ctx context.Context, n string) (*Admin, error) {
 	name, err := ParseResourceName(n)
 	if err != nil {
 		return nil, err
 	}
-	admin, err := s.repo.FindAdminByID(name.AdminID)
+	admin, err := s.repo.FindAdminByID(ctx, name.AdminID)
 	if err != nil {
 		return nil, err
 	}
 	return admin, nil
 }
 
-func (s *svc) CreateAdmin(adminInput *Admin) (admin *Admin, err error) {
-	admin, err = s.repo.CreateAdmin(adminInput)
+// CreateAdmin .
+func (s *Service) CreateAdmin(ctx context.Context, adminInput *Admin) (admin *Admin, err error) {
+	admin, err = s.repo.CreateAdmin(ctx, adminInput)
 	if err != nil {
 		return nil, err
 	}
 	return
 }
 
-func (s *svc) UpdateAdmin(n string, mask *UpdateMask, adminInput *Admin) (*Admin, error) {
+// UpdateAdmin .
+func (s *Service) UpdateAdmin(ctx context.Context, n string, mask *UpdateMask, adminInput *Admin) (*Admin, error) {
 	name, err := ParseResourceName(n)
 	if err != nil {
 		return nil, err
 	}
-	admin, err := s.repo.UpdateAdmin(name.AdminID, mask, adminInput)
+	admin, err := s.repo.UpdateAdmin(ctx, name.AdminID, mask, adminInput)
 	if err != nil {
 		return nil, err
 	}
 	return admin, nil
 }
 
-func (s *svc) DeleteAdmin(n string) error {
+// DeleteAdmin .
+func (s *Service) DeleteAdmin(ctx context.Context, n string) error {
 	name, err := ParseResourceName(n)
 	if err != nil {
 		return err
 	}
-	err = s.repo.DeleteAdmin(name.AdminID)
+	err = s.repo.DeleteAdmin(ctx, name.AdminID)
 	if err != nil {
 		return err
 	}

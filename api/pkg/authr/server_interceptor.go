@@ -37,7 +37,7 @@ type ServerInterceptorConfig struct {
 
 // NewServerInterceptor return new instance of auth gRPC interceptor
 func NewServerInterceptor(config *ServerInterceptorConfig) *ServerInterceptor {
-	var whiteList map[string]bool
+	whiteList := config.WhiteList
 	if config.WhiteList == nil {
 		whiteList = make(map[string]bool)
 	}
@@ -60,7 +60,6 @@ func (i *ServerInterceptor) Unary() grpc.UnaryServerInterceptor {
 		if err != nil {
 			return nil, err
 		}
-
 		h, err := handler(context.WithValue(ctx, tokenContextKey, token), req)
 		return h, err
 	}
@@ -74,6 +73,7 @@ func (i *ServerInterceptor) Stream() grpc.StreamServerInterceptor {
 }
 
 func (i *ServerInterceptor) authorize(ctx context.Context, method string) (*token.JWTClaims, error) {
+	fmt.Printf("white list: %v\nmethod: %s\n", i.whiteList, method)
 	if i.whiteList[method] {
 		return nil, nil
 	}
