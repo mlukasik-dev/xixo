@@ -4,10 +4,10 @@ package identitypb
 
 import (
 	context "context"
-	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -31,7 +31,7 @@ type IdentityServiceClient interface {
 	GetAdmin(ctx context.Context, in *GetAdminRequest, opts ...grpc.CallOption) (*Admin, error)
 	CreateAdmin(ctx context.Context, in *CreateAdminRequest, opts ...grpc.CallOption) (*Admin, error)
 	UpdateAdmin(ctx context.Context, in *UpdateAdminRequest, opts ...grpc.CallOption) (*Admin, error)
-	DeleteAdmin(ctx context.Context, in *DeleteAdminRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	DeleteAdmin(ctx context.Context, in *DeleteAdminRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// User's RPCs
 	ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error)
 	// Counts resources based on specified filter and returnes the result
@@ -39,7 +39,7 @@ type IdentityServiceClient interface {
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error)
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*User, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*User, error)
-	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Role's RPCs
 	ListRoles(ctx context.Context, in *ListRolesRequest, opts ...grpc.CallOption) (*ListRolesResponse, error)
 	// Counts resources based on specified filter and returnes the result
@@ -47,7 +47,7 @@ type IdentityServiceClient interface {
 	GetRole(ctx context.Context, in *GetRoleRequest, opts ...grpc.CallOption) (*Role, error)
 	CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*Role, error)
 	UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*Role, error)
-	DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type identityServiceClient struct {
@@ -121,8 +121,8 @@ func (c *identityServiceClient) UpdateAdmin(ctx context.Context, in *UpdateAdmin
 	return out, nil
 }
 
-func (c *identityServiceClient) DeleteAdmin(ctx context.Context, in *DeleteAdminRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *identityServiceClient) DeleteAdmin(ctx context.Context, in *DeleteAdminRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/xixo.identity.v1.IdentityService/DeleteAdmin", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -175,8 +175,8 @@ func (c *identityServiceClient) UpdateUser(ctx context.Context, in *UpdateUserRe
 	return out, nil
 }
 
-func (c *identityServiceClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *identityServiceClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/xixo.identity.v1.IdentityService/DeleteUser", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -229,8 +229,8 @@ func (c *identityServiceClient) UpdateRole(ctx context.Context, in *UpdateRoleRe
 	return out, nil
 }
 
-func (c *identityServiceClient) DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *identityServiceClient) DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/xixo.identity.v1.IdentityService/DeleteRole", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -255,7 +255,7 @@ type IdentityServiceServer interface {
 	GetAdmin(context.Context, *GetAdminRequest) (*Admin, error)
 	CreateAdmin(context.Context, *CreateAdminRequest) (*Admin, error)
 	UpdateAdmin(context.Context, *UpdateAdminRequest) (*Admin, error)
-	DeleteAdmin(context.Context, *DeleteAdminRequest) (*empty.Empty, error)
+	DeleteAdmin(context.Context, *DeleteAdminRequest) (*emptypb.Empty, error)
 	// User's RPCs
 	ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error)
 	// Counts resources based on specified filter and returnes the result
@@ -263,7 +263,7 @@ type IdentityServiceServer interface {
 	GetUser(context.Context, *GetUserRequest) (*User, error)
 	CreateUser(context.Context, *CreateUserRequest) (*User, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*User, error)
-	DeleteUser(context.Context, *DeleteUserRequest) (*empty.Empty, error)
+	DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error)
 	// Role's RPCs
 	ListRoles(context.Context, *ListRolesRequest) (*ListRolesResponse, error)
 	// Counts resources based on specified filter and returnes the result
@@ -271,7 +271,7 @@ type IdentityServiceServer interface {
 	GetRole(context.Context, *GetRoleRequest) (*Role, error)
 	CreateRole(context.Context, *CreateRoleRequest) (*Role, error)
 	UpdateRole(context.Context, *UpdateRoleRequest) (*Role, error)
-	DeleteRole(context.Context, *DeleteRoleRequest) (*empty.Empty, error)
+	DeleteRole(context.Context, *DeleteRoleRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedIdentityServiceServer()
 }
 
@@ -300,7 +300,7 @@ func (UnimplementedIdentityServiceServer) CreateAdmin(context.Context, *CreateAd
 func (UnimplementedIdentityServiceServer) UpdateAdmin(context.Context, *UpdateAdminRequest) (*Admin, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAdmin not implemented")
 }
-func (UnimplementedIdentityServiceServer) DeleteAdmin(context.Context, *DeleteAdminRequest) (*empty.Empty, error) {
+func (UnimplementedIdentityServiceServer) DeleteAdmin(context.Context, *DeleteAdminRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteAdmin not implemented")
 }
 func (UnimplementedIdentityServiceServer) ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error) {
@@ -318,7 +318,7 @@ func (UnimplementedIdentityServiceServer) CreateUser(context.Context, *CreateUse
 func (UnimplementedIdentityServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
 }
-func (UnimplementedIdentityServiceServer) DeleteUser(context.Context, *DeleteUserRequest) (*empty.Empty, error) {
+func (UnimplementedIdentityServiceServer) DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
 func (UnimplementedIdentityServiceServer) ListRoles(context.Context, *ListRolesRequest) (*ListRolesResponse, error) {
@@ -336,7 +336,7 @@ func (UnimplementedIdentityServiceServer) CreateRole(context.Context, *CreateRol
 func (UnimplementedIdentityServiceServer) UpdateRole(context.Context, *UpdateRoleRequest) (*Role, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateRole not implemented")
 }
-func (UnimplementedIdentityServiceServer) DeleteRole(context.Context, *DeleteRoleRequest) (*empty.Empty, error) {
+func (UnimplementedIdentityServiceServer) DeleteRole(context.Context, *DeleteRoleRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRole not implemented")
 }
 func (UnimplementedIdentityServiceServer) mustEmbedUnimplementedIdentityServiceServer() {}

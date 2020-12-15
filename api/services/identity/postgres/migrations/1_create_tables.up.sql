@@ -1,7 +1,14 @@
 -- https://dba.stackexchange.com/questions/68266/what-is-the-best-way-to-store-an-email-address-in-postgresql
-CREATE DOMAIN email AS TEXT CHECK (
+CREATE DOMAIN email AS text CHECK (
   value ~ '^[a-zA-Z0-9.!#$%&''*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$'
 );
+
+-- https://en.wikipedia.org/wiki/E.164
+-- https://stackoverflow.com/questions/6478875/regular-expression-matching-e-164-formatted-phone-numbers
+CREATE DOMAIN phone_number AS text CHECK (
+  value ~ '^\+?[1-9]\d{1,14}$'
+);
+
 CREATE TABLE IF NOT EXISTS roles (
   PRIMARY KEY (role_id),
   role_id uuid DEFAULT gen_random_uuid(),
@@ -61,7 +68,7 @@ CREATE TABLE IF NOT EXISTS users (
   email text NOT NULL,
   password varchar(255),
   /* if NULL means user was created, but not registered yet */
-  phone_number varchar(15),
+  phone_number phone_number,
   /* max digits is 15 all spaces must be removed */
   created_at timestamp NOT NULL DEFAULT NOW(),
   updated_at timestamp NOT NULL DEFAULT NOW(),
